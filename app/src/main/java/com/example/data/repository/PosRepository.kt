@@ -142,6 +142,13 @@ class PosRepository(private val posDao: PosDao) {
         posDao.recordLossAtomic(productId, quantity, reason, note)
     }
 
+    suspend fun cancelLoss(
+        lossId: Long,
+        restoreStock: Boolean = true
+    ): Boolean = withContext(Dispatchers.IO) {
+        posDao.cancelLossAtomic(lossId, restoreStock)
+    }
+
     // Check & process expired products (IDEMPOTENT)
     suspend fun processExpiredProducts(): Int = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()

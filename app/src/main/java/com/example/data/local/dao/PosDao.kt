@@ -607,6 +607,56 @@ interface PosDao {
         return true
     }
 
+    @Query("SELECT * FROM loss_records WHERE id = :id LIMIT 1")
+    suspend fun getLossRecordById(id: Long): LossRecordEntity?
+
+    @Query("DELETE FROM loss_records WHERE id = :id")
+    suspend fun deleteLossRecord(id: Long)
+
+    @Transaction
+    suspend fun cancelLossAtomic(
+        lossId: Long,
+        restoreStock: Boolean = true
+    ): Boolean {
+        val loss = getLossRecordById(lossId) ?: return false
+
+        // 1. Kembalikan stok barang jika diminta dan produk masih tersedia di database
+        if (restoreStock) {
+            val product = getProductById(loss.productId)
+            if (product != null) {
+                val previousStock = product.stock
+                val newStock = previousStock + loss.quantity
+                updateProductStock(product.id, newStock, System.currentTimeMillis())
+
+                insertStockMovement(
+                    StockMovementEntity(
+                        productId = product.id,
+                        type = "RESTORE_LOSS",
+                        quantity = loss.quantity,
+                        previousStock = previousStock,
+                        newStock = newStock,
+                        note = "Pembatalan kerugian (${loss.reason})"
+                    )
+                )
+            }
+        }
+
+        // 2. Masukkan dana kerugian kembali ke catatan kas (pemasukan)
+        insertIncome(
+            IncomeEntity(
+                source = "Pembatalan Kerugian",
+                amount = loss.totalLoss,
+                note = "Pengembalian dana rugi ${loss.productName} (${loss.quantity} pcs)",
+                date = System.currentTimeMillis(),
+                createdAt = System.currentTimeMillis()
+            )
+        )
+
+        // 3. Hapus catatan kerugian
+        deleteLossRecord(lossId)
+        return true
+    }
+
     // --- PROMOS ---
     @Query("SELECT * FROM promos ORDER BY createdAt DESC")
     fun getAllPromos(): Flow<List<PromoEntity>>

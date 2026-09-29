@@ -846,7 +846,10 @@ fun MainApp(viewModel: MainViewModel) {
                                     showAddExpenseDialog = true
                                 },
                                 onDeleteExpense = { viewModel.deleteExpense(it) },
-                                onDeleteTransaction = { viewModel.deleteTransaction(it) }
+                                onDeleteTransaction = { viewModel.deleteTransaction(it) },
+                                onCancelLoss = { lossId, restoreStock ->
+                                    viewModel.cancelLoss(lossId, restoreStock)
+                                }
                             )
                         }
                     }

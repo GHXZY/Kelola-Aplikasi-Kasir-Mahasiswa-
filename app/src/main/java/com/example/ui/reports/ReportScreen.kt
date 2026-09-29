@@ -37,6 +37,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -50,8 +52,13 @@ import androidx.compose.material.icons.filled.PointOfSale
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,6 +71,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -82,6 +90,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.local.entity.ExpenseEntity
 import com.example.data.local.entity.IncomeEntity
+import com.example.data.local.entity.LossRecordEntity
 import com.example.data.local.entity.TransactionEntity
 import com.example.ui.ReportStats
 import com.example.ui.components.ConfirmationDialog
@@ -136,6 +145,7 @@ fun ReportScreen(
     onDeleteExpense: (Long) -> Unit,
     onEditExpense: (ExpenseEntity) -> Unit = {},
     onDeleteTransaction: (Long) -> Unit = {},
+    onCancelLoss: (lossId: Long, restoreStock: Boolean) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val periods = listOf("Hari Ini", "7 Hari Terakhir", "Bulan Ini", "Semua")
@@ -145,6 +155,7 @@ fun ReportScreen(
     var transactionSearch by remember { mutableStateOf("") }
     var menuExpandedItemId by remember { mutableStateOf<Long?>(null) }
     var itemToDelete by remember { mutableStateOf<CashflowItem?>(null) }
+    var lossRecordToCancel by remember { mutableStateOf<LossRecordEntity?>(null) }
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         isVisible = true
@@ -955,6 +966,8 @@ fun ReportScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(KelolaRadius.ShapeCard)
+                            .clickable { lossRecordToCancel = record }
                             .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp),
                         shape = KelolaRadius.ShapeCard,
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -1003,12 +1016,42 @@ fun ReportScreen(
                                 )
                             }
 
-                            Text(
-                                text = "-${FormatUtils.formatRupiah(record.totalLoss)}",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = DangerRed
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "-${FormatUtils.formatRupiah(record.totalLoss)}",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DangerRed
+                                )
+
+                                Surface(
+                                    onClick = { lossRecordToCancel = record },
+                                    shape = KelolaRadius.ShapeSmall,
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.Undo,
+                                            contentDescription = "Batalkan",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Text(
+                                            text = "Batalkan",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1033,6 +1076,181 @@ fun ReportScreen(
             },
             onDismiss = {
                 itemToDelete = null
+            }
+        )
+    }
+
+    // Dialog Pembatalan Kerugian & Pengembalian Dana ke Kas
+    lossRecordToCancel?.let { loss ->
+        var restoreStock by remember { mutableStateOf(true) }
+
+        AlertDialog(
+            onDismissRequest = { lossRecordToCancel = null },
+            shape = KelolaRadius.ShapeCard,
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Undo,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = "Batalkan Kerugian?",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Rincian produk yang dibatalkan kerugiannya
+                    Surface(
+                        shape = KelolaRadius.ShapeInput,
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = loss.productName,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Jumlah: ${loss.quantity} pcs • HPP: ${FormatUtils.formatRupiah(loss.costPrice)}/pcs",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Alasan: ${loss.reason}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = FormatUtils.formatRupiah(loss.totalLoss),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DangerRed
+                                )
+                            }
+                        }
+                    }
+
+                    // Banner info bahwa dana akan otomatis masuk ke kas
+                    Surface(
+                        shape = KelolaRadius.ShapeInput,
+                        color = SuccessContainer.copy(alpha = 0.6f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountBalanceWallet,
+                                contentDescription = null,
+                                tint = SuccessGreen,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Dana Otomatis Masuk Kas",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = SuccessGreen
+                                )
+                                Text(
+                                    text = "Dana rugi sebesar ${FormatUtils.formatRupiah(loss.totalLoss)} akan otomatis dicatat kembali sebagai pemasukan kas usaha.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+
+                    // Checkbox kembalikan stok
+                    Surface(
+                        onClick = { restoreStock = !restoreStock },
+                        shape = KelolaRadius.ShapeInput,
+                        color = Color.Transparent,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Checkbox(
+                                checked = restoreStock,
+                                onCheckedChange = { restoreStock = it },
+                                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = "Kembalikan stok produk (+${loss.quantity} pcs)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Tambah kembali stok barang ke katalog usaha",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onCancelLoss(loss.id, restoreStock)
+                        lossRecordToCancel = null
+                    },
+                    shape = KelolaRadius.ShapeInput,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Batalkan Kerugian", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { lossRecordToCancel = null },
+                    shape = KelolaRadius.ShapeInput
+                ) {
+                    Text("Tutup", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         )
     }

@@ -1175,6 +1175,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun cancelLoss(lossId: Long, restoreStock: Boolean = true, onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            val success = repository.cancelLoss(lossId, restoreStock)
+            if (success) {
+                _userMessage.emit("Kerugian berhasil dibatalkan. Dana otomatis masuk ke kas.")
+            } else {
+                _userMessage.emit("Gagal membatalkan kerugian.")
+            }
+            onComplete()
+        }
+    }
+
     fun processExpiredProductsManually() {
         viewModelScope.launch {
             val count = repository.processExpiredProducts()
