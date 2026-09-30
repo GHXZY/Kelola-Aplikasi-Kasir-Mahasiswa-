@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Smartphone, Monitor, Moon, Sun, RotateCw, Wifi, Battery, Signal, ArrowLeft } from 'lucide-react';
+import { Smartphone, Monitor, Moon, Sun, RotateCw, Wifi, Battery, Signal, ArrowLeft, Tablet } from 'lucide-react';
 import { KelolaLogoBadge } from './KelolaLogo';
 
-export type DevicePreset = 'small' | 'standard' | 'large' | 'responsive';
+export type DevicePreset = 'small' | 'standard' | 'large' | 'tablet-p' | 'tablet-l' | 'responsive';
 
 interface DeviceSize {
   width: number | string;
@@ -14,6 +14,8 @@ const DEVICE_SIZES: Record<DevicePreset, DeviceSize> = {
   small: { width: 360, height: 740, label: 'Small Android (360×740)' },
   standard: { width: 412, height: 892, label: 'Standard Android (412×892)' },
   large: { width: 430, height: 932, label: 'Large Android (430×932)' },
+  'tablet-p': { width: 768, height: 1024, label: 'Tablet Portrait (768×1024)' },
+  'tablet-l': { width: 1024, height: 768, label: 'Tablet Landscape (1024×768)' },
   responsive: { width: '100%', height: '100%', label: 'Responsif Penuh' },
 };
 
@@ -81,12 +83,12 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
         {/* Controls */}
         <div className="flex items-center gap-2">
           {/* Preset Buttons */}
-          <div className="bg-slate-800 p-0.5 rounded-lg flex items-center gap-0.5 border border-slate-700/60">
-            {(['small', 'standard', 'large', 'responsive'] as DevicePreset[]).map((p) => (
+          <div className="bg-slate-800 p-0.5 rounded-lg flex items-center gap-0.5 border border-slate-700/60 overflow-x-auto max-w-[500px]">
+            {(['small', 'standard', 'large', 'tablet-p', 'tablet-l', 'responsive'] as DevicePreset[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPreset(p)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                className={`px-2 py-1 text-[11px] font-medium rounded-md whitespace-nowrap transition-all ${
                   preset === p
                     ? 'bg-brand-primary text-white font-semibold shadow-xs'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
@@ -96,7 +98,14 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
                 {p === 'small' && '360dp'}
                 {p === 'standard' && '412dp'}
                 {p === 'large' && '430dp'}
-                {p === 'responsive' && <Monitor className="w-3.5 h-3.5" />}
+                {p === 'tablet-p' && 'Tablet (P)'}
+                {p === 'tablet-l' && 'Tablet (L)'}
+                {p === 'responsive' && (
+                  <span className="flex items-center gap-1">
+                    <Monitor className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Penuh</span>
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -104,7 +113,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           {/* Theme Toggle */}
           <button
             onClick={onToggleTheme}
-            className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 transition-all"
+            className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 transition-all flex-shrink-0"
             title={isDark ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
           >
             {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-brand-sky" />}
@@ -113,7 +122,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           {/* Refresh Page */}
           <button
             onClick={() => window.location.reload()}
-            className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 transition-all"
+            className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 transition-all flex-shrink-0"
             title="Muat Ulang Preview"
           >
             <RotateCw className="w-3.5 h-3.5" />
@@ -122,15 +131,17 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
       </header>
 
       {/* Main Preview Canvas Area */}
-      <main className="flex-1 flex items-center justify-center p-2 sm:p-6 overflow-auto bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <main className="flex-1 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-auto bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
         {isFullscreen ? (
-          <div className={`w-full h-full max-w-md mx-auto flex flex-col shadow-2xl overflow-hidden relative ${isDark ? 'dark bg-slate-900' : 'bg-[#F7F9FF]'}`}>
+          <div className={`w-full h-full flex flex-col shadow-2xl overflow-hidden relative ${isDark ? 'dark bg-slate-900' : 'bg-[#F7F9FF]'}`}>
             {children}
           </div>
         ) : (
           <div
             style={{ width: size.width, height: size.height }}
-            className={`relative flex flex-col rounded-[44px] ring-[12px] ring-slate-800/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] border-[4px] border-slate-700/80 overflow-hidden flex-shrink-0 transition-all duration-200 ${
+            className={`relative flex flex-col ${
+              preset.startsWith('tablet') ? 'rounded-[28px] ring-[10px]' : 'rounded-[44px] ring-[12px]'
+            } ring-slate-800/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] border-[4px] border-slate-700/80 overflow-hidden flex-shrink-0 transition-all duration-200 ${
               isDark ? 'dark bg-slate-900' : 'bg-[#F7F9FF]'
             }`}
           >

@@ -37,6 +37,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +64,7 @@ import com.example.ui.components.EmptyState
 import com.example.ui.components.KelolaSecondaryButton
 import com.example.ui.components.SearchField
 import com.example.ui.components.StockBadge
+import com.example.ui.theme.AdaptiveContainer
 import com.example.ui.theme.BorderLight
 import com.example.ui.theme.BrandDeep
 import com.example.ui.theme.DangerContainer
@@ -68,12 +73,14 @@ import com.example.ui.theme.GradientBrand
 import com.example.ui.theme.KelolaRadius
 import com.example.ui.theme.KelolaSpacing
 import com.example.ui.theme.KelolaTheme
+import com.example.ui.theme.LocalWindowSizeClass
 import com.example.ui.theme.PrimaryBlue
 import com.example.ui.theme.SuccessContainer
 import com.example.ui.theme.SuccessGreen
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.isLandscapeOrientation
 import com.example.ui.theme.kelolaSoftShadow
 import com.example.util.FormatUtils
 
@@ -121,283 +128,256 @@ fun CashierScreen(
         cart.items.associate { it.product.id to it.quantity }
     }
 
+    val windowSize = LocalWindowSizeClass.current
+    val isLandscape = isLandscapeOrientation()
+    val isSplitPos = windowSize.isExpanded || (windowSize.isMedium && isLandscape)
+
     Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = KelolaSpacing.ScreenMargin)
-        ) {
-            Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
-
-            // Search Bar & Barcode Scanner Integration
-            SearchField(
-                query = searchQuery,
-                onQueryChange = { newQuery ->
-                    val trimmed = newQuery.trim()
-                    // Deteksi instan jika input adalah hasil pemindaian scanner barcode (cocok tepat dengan barcode produk)
-                    val exactScannedProduct = products.find { it.barcode != null && it.barcode.equals(trimmed, ignoreCase = true) }
-                    if (exactScannedProduct != null && exactScannedProduct.stock > 0 && trimmed.length >= 8) {
-                        onAddToCart(exactScannedProduct)
-                        searchQuery = "" // Reset query agar kasir langsung siap untuk scan berikutnya
-                    } else {
-                        searchQuery = newQuery
-                    }
-                },
-                placeholder = "Cari produk, kategori, atau barcode...",
-                testTag = "cashier_search_input"
-            )
-
-            Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
-
-            // Category Chips (Tombol kecil, chip kategori: radius 10px, tanpa border)
-            CategoryChipGroup(
-                categories = categoryNames,
-                selectedCategory = selectedCategoryName,
-                onSelectCategory = { selectedCategoryName = it }
-            )
-
-            Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
-
-            // Tombol [ Scan Barcode ] (Search -> Kategori -> [ Scan Barcode ] -> Daftar Produk)
-            KelolaSecondaryButton(
-                text = "Scan Barcode",
-                icon = Icons.Default.QrCodeScanner,
-                onClick = { showBarcodeScanner = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("button_scan_barcode_cashier")
-            )
-
-            Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
-
-            if (filteredProducts.isEmpty()) {
-                EmptyState(
-                    icon = Icons.Default.Inventory2,
-                    title = "Produk Tidak Ditemukan",
-                    description = if (searchQuery.isNotEmpty()) "Tidak ada produk yang sesuai dengan '$searchQuery'." else "Belum ada produk di kategori ini.",
-                    modifier = Modifier.weight(1f)
-                )
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
-                    verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
-                    contentPadding = PaddingValues(bottom = if (cart.totalItemCount > 0) 180.dp else 24.dp),
+        if (!isSplitPos) {
+            // Standard / Mobile Single-Pane POS Layout (Baseline preserved)
+            AdaptiveContainer(maxWidth = 1040.dp) {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
+                        .fillMaxSize()
+                        .padding(horizontal = KelolaSpacing.ScreenMargin)
                 ) {
-                    items(filteredProducts, key = { it.id }) { product ->
-                        val qtyInCart = cartQtyMap[product.id] ?: 0
-                        val isOutOfStock = product.stock <= 0
+                    Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
 
-                        Card(
+                    // Search Bar & Barcode Scanner Integration
+                    SearchField(
+                        query = searchQuery,
+                        onQueryChange = { newQuery ->
+                            val trimmed = newQuery.trim()
+                            val exactScannedProduct = products.find { it.barcode != null && it.barcode.equals(trimmed, ignoreCase = true) }
+                            if (exactScannedProduct != null && exactScannedProduct.stock > 0 && trimmed.length >= 8) {
+                                onAddToCart(exactScannedProduct)
+                                searchQuery = ""
+                            } else {
+                                searchQuery = newQuery
+                            }
+                        },
+                        placeholder = "Cari produk, kategori, atau barcode...",
+                        testTag = "cashier_search_input"
+                    )
+
+                    Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
+
+                    // Category Chips
+                    CategoryChipGroup(
+                        categories = categoryNames,
+                        selectedCategory = selectedCategoryName,
+                        onSelectCategory = { selectedCategoryName = it }
+                    )
+
+                    Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
+
+                    // Tombol [ Scan Barcode ]
+                    KelolaSecondaryButton(
+                        text = "Scan Barcode",
+                        icon = Icons.Default.QrCodeScanner,
+                        onClick = { showBarcodeScanner = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("button_scan_barcode_cashier")
+                    )
+
+                    Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
+
+                    if (filteredProducts.isEmpty()) {
+                        EmptyState(
+                            icon = Icons.Default.Inventory2,
+                            title = "Produk Tidak Ditemukan",
+                            description = if (searchQuery.isNotEmpty()) "Tidak ada produk yang sesuai dengan '$searchQuery'." else "Belum ada produk di kategori ini.",
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        val gridColumns = if (windowSize.isCompact) GridCells.Fixed(2) else GridCells.Fixed(3)
+                        LazyVerticalGrid(
+                            columns = gridColumns,
+                            horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
+                            verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
+                            contentPadding = PaddingValues(bottom = if (cart.totalItemCount > 0) 180.dp else 24.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(KelolaRadius.ShapeCard)
-                                .clickable(enabled = !isOutOfStock && qtyInCart == 0) { onAddToCart(product) }
-                                .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 3.dp)
-                                .testTag("product_pos_card_${product.id}"),
-                            shape = KelolaRadius.ShapeCard,
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (qtyInCart > 0) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                                .weight(1f)
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp)
-                            ) {
-                                // Product Header / Category + Tombol Batalkan Pembelian
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    val catName = categoryMap[product.categoryId]?.name ?: "Umum"
-                                    Text(
-                                        text = catName,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontWeight = FontWeight.Medium,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.weight(1f, fill = false)
-                                    )
+                            items(filteredProducts, key = { it.id }) { product ->
+                                val qtyInCart = cartQtyMap[product.id] ?: 0
+                                PosProductCard(
+                                    product = product,
+                                    categoryName = categoryMap[product.categoryId]?.name ?: "Umum",
+                                    qtyInCart = qtyInCart,
+                                    onAddToCart = onAddToCart,
+                                    onUpdateQuantity = onUpdateQuantity,
+                                    onRemoveFromCart = onRemoveFromCart
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
-                                    if (qtyInCart > 0) {
-                                        Surface(
-                                            onClick = { onRemoveFromCart(product.id) },
+            // Sticky Bottom Cart Bar (Centered with max width on larger screens)
+            if (cart.totalItemCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .widthIn(max = 680.dp)
+                            .navigationBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .kelolaSoftShadow(shape = KelolaRadius.ShapeSheet, elevation = 12.dp),
+                        shape = KelolaRadius.ShapeSheet,
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, BorderLight)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
                                             modifier = Modifier
-                                                .height(32.dp)
-                                                .testTag("button_cancel_product_${product.id}"),
-                                            color = DangerContainer,
-                                            shape = KelolaRadius.ShapeSmall
+                                                .size(7.dp)
+                                                .clip(CircleShape)
+                                                .background(SuccessGreen)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "Total Pesanan",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "${cart.totalItemCount} barang dipilih",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = FontWeight.Normal
+                                    )
+                                    if (cart.appliedPromos.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Surface(
+                                            shape = KelolaRadius.ShapeSmall,
+                                            color = SuccessContainer
                                         ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Close,
-                                                    contentDescription = "Batalkan pembelian ${product.name}",
-                                                    tint = DangerRed,
-                                                    modifier = Modifier.size(12.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text(
-                                                    text = "Batal",
-                                                    color = DangerRed,
-                                                    fontSize = 11.sp,
-                                                    fontWeight = FontWeight.SemiBold
-                                                )
-                                            }
+                                            Text(
+                                                text = "Promo Hemat: -${FormatUtils.formatRupiah(cart.promoDiscount)}",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = SuccessGreen,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
                                         }
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                // Product visual thumbnail container
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(64.dp)
-                                        .clip(KelolaRadius.ShapeInput)
-                                        .background(
-                                            if (qtyInCart > 0) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    val initials = product.name.take(2).uppercase()
+                                Column(horizontalAlignment = Alignment.End) {
+                                    if (cart.appliedPromos.isNotEmpty()) {
+                                        Text(
+                                            text = FormatUtils.formatRupiah(cart.subtotal),
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                     Text(
-                                        text = initials,
+                                        text = FormatUtils.formatRupiah(cart.total),
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                 }
+                            }
 
-                                Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
 
-                                // Product Name
-                                Text(
-                                    text = product.name,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-
-                                Spacer(modifier = Modifier.height(2.dp))
-
-                                // Price
-                                Text(
-                                    text = FormatUtils.formatRupiah(product.sellingPrice),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                // Stock info
-                                StockBadge(
-                                    stock = product.stock,
-                                    minimumStock = product.minimumStock,
-                                    unit = product.unit
-                                )
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                // Cart control action
-                                if (qtyInCart > 0) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Tombol Tidak Jadi Beli
+                                Surface(
+                                    onClick = { showCancelOrderDialog = true },
+                                    shape = KelolaRadius.ShapeInput,
+                                    color = DangerContainer,
+                                    border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.25f)),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(KelolaSpacing.ButtonHeightCta)
+                                        .testTag("button_cancel_order_bar")
+                                ) {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.padding(horizontal = KelolaSpacing.Space3)
                                     ) {
-                                        Surface(
-                                            onClick = { onUpdateQuantity(product.id, qtyInCart - 1) },
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag("button_decrease_cart_${product.id}"),
-                                            shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.surface
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Remove,
-                                                    contentDescription = "Kurang",
-                                                    tint = MaterialTheme.colorScheme.onSurface,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                            }
-                                        }
-
-                                        Text(
-                                            text = "$qtyInCart",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = null,
+                                            tint = DangerRed,
+                                            modifier = Modifier.size(16.dp)
                                         )
-
-                                        Surface(
-                                            onClick = {
-                                                if (qtyInCart < product.stock) {
-                                                    onUpdateQuantity(product.id, qtyInCart + 1)
-                                                }
-                                            },
-                                            enabled = qtyInCart < product.stock,
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag("button_increase_cart_${product.id}"),
-                                            shape = CircleShape,
-                                            color = if (qtyInCart < product.stock) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Add,
-                                                    contentDescription = "Tambah",
-                                                    tint = if (qtyInCart < product.stock) MaterialTheme.colorScheme.primary else KelolaTheme.textTertiary,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                            }
-                                        }
+                                        Spacer(modifier = Modifier.width(KelolaSpacing.Space1))
+                                        Text(
+                                            text = "Batal Beli",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = DangerRed,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
                                     }
-                                } else {
-                                    Surface(
-                                        onClick = { onAddToCart(product) },
-                                        enabled = !isOutOfStock,
+                                }
+
+                                // Tombol Bayar / Buka Keranjang
+                                Surface(
+                                    onClick = onOpenCart,
+                                    shape = KelolaRadius.ShapeInput,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .weight(1.2f)
+                                        .height(KelolaSpacing.ButtonHeightCta)
+                                        .testTag("button_open_cart_bar")
+                                ) {
+                                    Row(
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(40.dp)
-                                            .testTag("button_add_to_cart_${product.id}"),
-                                        shape = KelolaRadius.ShapeSmall,
-                                        color = if (!isOutOfStock) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                            .fillMaxSize()
+                                            .padding(horizontal = KelolaSpacing.Space4),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
                                     ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Add,
-                                                contentDescription = null,
-                                                tint = if (!isOutOfStock) MaterialTheme.colorScheme.primary else KelolaTheme.textTertiary,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(
-                                                text = if (isOutOfStock) "Habis" else "Pilih",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = if (!isOutOfStock) MaterialTheme.colorScheme.primary else KelolaTheme.textTertiary,
-                                                maxLines = 1,
-                                                softWrap = false
-                                            )
-                                        }
+                                        Text(
+                                            text = "Bayar",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                        Spacer(modifier = Modifier.width(KelolaSpacing.Space2))
+                                        Icon(
+                                            Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(18.dp)
+                                        )
                                     }
                                 }
                             }
@@ -405,169 +385,325 @@ fun CashierScreen(
                     }
                 }
             }
-        }
-
-        // Sticky Bottom Cart Bar (Radius 24px, Soft shadow, Border subtle)
-        if (cart.totalItemCount > 0) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .kelolaSoftShadow(shape = KelolaRadius.ShapeSheet, elevation = 12.dp),
-                shape = KelolaRadius.ShapeSheet,
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, BorderLight)
-            ) {
-                Column(
+        } else {
+            // Adaptive Dual-Pane Split POS for Tablet & Landscape
+            AdaptiveContainer(maxWidth = 1200.dp) {
+                Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                        .fillMaxSize()
+                        .padding(horizontal = KelolaSpacing.ScreenMargin),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    // Left Pane: Catalog Section
+                    Column(
+                        modifier = Modifier
+                            .weight(1.35f)
+                            .fillMaxHeight()
                     ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(7.dp)
-                                        .clip(CircleShape)
-                                        .background(SuccessGreen)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Total Pesanan",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                        Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
+
+                        // Search Bar
+                        SearchField(
+                            query = searchQuery,
+                            onQueryChange = { newQuery ->
+                                val trimmed = newQuery.trim()
+                                val exactScannedProduct = products.find { it.barcode != null && it.barcode.equals(trimmed, ignoreCase = true) }
+                                if (exactScannedProduct != null && exactScannedProduct.stock > 0 && trimmed.length >= 8) {
+                                    onAddToCart(exactScannedProduct)
+                                    searchQuery = ""
+                                } else {
+                                    searchQuery = newQuery
+                                }
+                            },
+                            placeholder = "Cari produk, kategori, atau barcode...",
+                            testTag = "cashier_search_input"
+                        )
+
+                        Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
+
+                        // Category Chips
+                        CategoryChipGroup(
+                            categories = categoryNames,
+                            selectedCategory = selectedCategoryName,
+                            onSelectCategory = { selectedCategoryName = it }
+                        )
+
+                        Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
+
+                        KelolaSecondaryButton(
+                            text = "Scan Barcode",
+                            icon = Icons.Default.QrCodeScanner,
+                            onClick = { showBarcodeScanner = true },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("button_scan_barcode_cashier")
+                        )
+
+                        Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
+
+                        if (filteredProducts.isEmpty()) {
+                            EmptyState(
+                                icon = Icons.Default.Inventory2,
+                                title = "Produk Tidak Ditemukan",
+                                description = if (searchQuery.isNotEmpty()) "Tidak ada produk yang sesuai dengan '$searchQuery'." else "Belum ada produk di kategori ini.",
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 160.dp),
+                                horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
+                                verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
+                                contentPadding = PaddingValues(bottom = 24.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            ) {
+                                items(filteredProducts, key = { it.id }) { product ->
+                                    val qtyInCart = cartQtyMap[product.id] ?: 0
+                                    PosProductCard(
+                                        product = product,
+                                        categoryName = categoryMap[product.categoryId]?.name ?: "Umum",
+                                        qtyInCart = qtyInCart,
+                                        onAddToCart = onAddToCart,
+                                        onUpdateQuantity = onUpdateQuantity,
+                                        onRemoveFromCart = onRemoveFromCart
+                                    )
+                                }
                             }
-                            Spacer(modifier = Modifier.height(2.dp))
+                        }
+                    }
+
+                    // Right Pane: Persistent POS Cart Panel
+                    Card(
+                        modifier = Modifier
+                            .weight(0.95f)
+                            .fillMaxHeight()
+                            .padding(vertical = KelolaSpacing.Space2)
+                            .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 3.dp),
+                        shape = KelolaRadius.ShapeCard,
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, BorderLight)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                        ) {
+                            // Cart Sidebar Header
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(SuccessGreen)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Keranjang Belanja",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                if (cart.totalItemCount > 0) {
+                                    Surface(
+                                        onClick = { showCancelOrderDialog = true },
+                                        shape = KelolaRadius.ShapeSmall,
+                                        color = DangerContainer,
+                                        modifier = Modifier.testTag("button_cancel_order_bar")
+                                    ) {
+                                        Text(
+                                            text = "Kosongkan",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = DangerRed,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+                            }
+
                             Text(
                                 text = "${cart.totalItemCount} barang dipilih",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Normal
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Cart Items List
+                            if (cart.items.isEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Belum ada produk di keranjang.\nPilih produk di sebelah kiri.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(cart.items, key = { it.product.id }) { item ->
+                                        Surface(
+                                            shape = KelolaRadius.ShapeSmall,
+                                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                            border = BorderStroke(0.5.dp, BorderLight),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(8.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(
+                                                        text = item.product.name,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                    Text(
+                                                        text = "${FormatUtils.formatRupiah(item.product.sellingPrice)} × ${item.quantity} = ${FormatUtils.formatRupiah(item.subtotal)}",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                }
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    Surface(
+                                                        onClick = { onUpdateQuantity(item.product.id, item.quantity - 1) },
+                                                        modifier = Modifier.size(28.dp).testTag("button_decrease_cart_${item.product.id}"),
+                                                        shape = CircleShape,
+                                                        color = MaterialTheme.colorScheme.surface
+                                                    ) {
+                                                        Box(contentAlignment = Alignment.Center) {
+                                                            Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(14.dp))
+                                                        }
+                                                    }
+                                                    Text(
+                                                        text = "${item.quantity}",
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        modifier = Modifier.padding(horizontal = 4.dp)
+                                                    )
+                                                    Surface(
+                                                        onClick = {
+                                                            if (item.quantity < item.product.stock) {
+                                                                onUpdateQuantity(item.product.id, item.quantity + 1)
+                                                            }
+                                                        },
+                                                        enabled = item.quantity < item.product.stock,
+                                                        modifier = Modifier.size(28.dp).testTag("button_increase_cart_${item.product.id}"),
+                                                        shape = CircleShape,
+                                                        color = MaterialTheme.colorScheme.surface
+                                                    ) {
+                                                        Box(contentAlignment = Alignment.Center) {
+                                                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Totals and Checkout CTA
                             if (cart.appliedPromos.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(2.dp))
                                 Surface(
                                     shape = KelolaRadius.ShapeSmall,
-                                    color = SuccessContainer
+                                    color = SuccessContainer,
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
                                 ) {
                                     Text(
                                         text = "Promo Hemat: -${FormatUtils.formatRupiah(cart.promoDiscount)}",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = SuccessGreen,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
                                 }
                             }
-                        }
 
-                        Column(horizontalAlignment = Alignment.End) {
-                            if (cart.appliedPromos.isNotEmpty()) {
-                                Text(
-                                    text = FormatUtils.formatRupiah(cart.subtotal),
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Text(
-                                text = FormatUtils.formatRupiah(cart.total),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Tombol Tidak Jadi Beli (Tombol Sekunder: 44px, Soft Danger)
-                        Surface(
-                            onClick = { showCancelOrderDialog = true },
-                            shape = KelolaRadius.ShapeInput,
-                            color = DangerContainer,
-                            border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.25f)),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(KelolaSpacing.ButtonHeightCta)
-                                .testTag("button_cancel_order_bar")
-                        ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(horizontal = KelolaSpacing.Space3)
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = null,
-                                    tint = DangerRed,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(KelolaSpacing.Space1))
                                 Text(
-                                    text = "Batal Beli",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = DangerRed,
-                                    maxLines = 1,
-                                    softWrap = false
+                                    text = "Total:",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = FormatUtils.formatRupiah(cart.total),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                        }
 
-                        // Tombol Bayar / Buka Keranjang (Tombol Utama CTA: 48px, Solid Primary)
-                        Surface(
-                            onClick = onOpenCart,
-                            shape = KelolaRadius.ShapeInput,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .weight(1.2f)
-                                .height(KelolaSpacing.ButtonHeightCta)
-                                .testTag("button_open_cart_bar")
-                        ) {
-                            Row(
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Surface(
+                                onClick = onOpenCart,
+                                enabled = cart.totalItemCount > 0,
+                                shape = KelolaRadius.ShapeInput,
+                                color = if (cart.totalItemCount > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = KelolaSpacing.Space4),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                    .fillMaxWidth()
+                                    .height(KelolaSpacing.ButtonHeightCta)
+                                    .testTag("button_open_cart_bar")
                             ) {
-                                Text(
-                                    text = "Bayar",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    softWrap = false
-                                )
-                                Spacer(modifier = Modifier.width(KelolaSpacing.Space2))
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Bayar Sekarang",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (cart.totalItemCount > 0) Color.White else KelolaTheme.textTertiary
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        tint = if (cart.totalItemCount > 0) Color.White else KelolaTheme.textTertiary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
 
         // Dialog Konfirmasi Tidak Jadi Beli (Modal Radius 32px, Tanpa Border)
         if (showCancelOrderDialog) {
@@ -651,6 +787,230 @@ fun CashierScreen(
                     showBarcodeScanner = false
                 }
             )
+        }
+    }
+}
+
+@Composable
+fun PosProductCard(
+    product: ProductEntity,
+    categoryName: String,
+    qtyInCart: Int,
+    onAddToCart: (ProductEntity) -> Unit,
+    onUpdateQuantity: (Long, Int) -> Unit,
+    onRemoveFromCart: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isOutOfStock = product.stock <= 0
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(KelolaRadius.ShapeCard)
+            .clickable(enabled = !isOutOfStock && qtyInCart == 0) { onAddToCart(product) }
+            .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 3.dp)
+            .testTag("product_pos_card_${product.id}"),
+        shape = KelolaRadius.ShapeCard,
+        colors = CardDefaults.cardColors(
+            containerColor = if (qtyInCart > 0) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            // Product Header / Category + Tombol Batalkan Pembelian
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = categoryName,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+
+                if (qtyInCart > 0) {
+                    Surface(
+                        onClick = { onRemoveFromCart(product.id) },
+                        modifier = Modifier
+                            .height(32.dp)
+                            .testTag("button_cancel_product_${product.id}"),
+                        color = DangerContainer,
+                        shape = KelolaRadius.ShapeSmall
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Batalkan pembelian ${product.name}",
+                                tint = DangerRed,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Batal",
+                                color = DangerRed,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Product visual thumbnail container
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .clip(KelolaRadius.ShapeInput)
+                    .background(
+                        if (qtyInCart > 0) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                val initials = product.name.take(2).uppercase()
+                Text(
+                    text = initials,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Product Name
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Price
+            Text(
+                text = FormatUtils.formatRupiah(product.sellingPrice),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Stock info
+            StockBadge(
+                stock = product.stock,
+                minimumStock = product.minimumStock,
+                unit = product.unit
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Cart control action
+            if (qtyInCart > 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        onClick = { onUpdateQuantity(product.id, qtyInCart - 1) },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("button_decrease_cart_${product.id}"),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surface
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = "Kurang",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "$qtyInCart",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Surface(
+                        onClick = {
+                            if (qtyInCart < product.stock) {
+                                onUpdateQuantity(product.id, qtyInCart + 1)
+                            }
+                        },
+                        enabled = qtyInCart < product.stock,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("button_increase_cart_${product.id}"),
+                        shape = CircleShape,
+                        color = if (qtyInCart < product.stock) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Tambah",
+                                tint = if (qtyInCart < product.stock) MaterialTheme.colorScheme.primary else KelolaTheme.textTertiary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            } else {
+                Surface(
+                    onClick = { onAddToCart(product) },
+                    enabled = !isOutOfStock,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .testTag("button_add_to_cart_${product.id}"),
+                    shape = KelolaRadius.ShapeSmall,
+                    color = if (!isOutOfStock) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = if (!isOutOfStock) MaterialTheme.colorScheme.primary else KelolaTheme.textTertiary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (isOutOfStock) "Habis" else "Pilih",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (!isOutOfStock) MaterialTheme.colorScheme.primary else KelolaTheme.textTertiary,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+                }
+            }
         }
     }
 }

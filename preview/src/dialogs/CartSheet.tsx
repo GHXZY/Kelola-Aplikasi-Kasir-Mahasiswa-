@@ -24,7 +24,7 @@ export const CartSheet: React.FC<CartSheetProps> = ({
       <div className="flex-1" onClick={onDismiss} />
 
       {/* Modal Bottom Sheet Container (ShapeSheet 16px) */}
-      <div className="bg-white rounded-t-sheet border-t border-slate-200 shadow-2xl flex flex-col max-h-[85vh] animate-slideUp">
+      <div className="bg-white rounded-t-sheet border-t border-slate-200 shadow-2xl flex flex-col max-h-[85vh] animate-slideUp w-full md:max-w-lg md:mx-auto md:rounded-card md:mb-6 md:border">
         {/* Sheet Drag Pill & Header */}
         <div className="p-4 pb-2 border-b border-slate-100 flex-shrink-0">
           <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto mb-3" />

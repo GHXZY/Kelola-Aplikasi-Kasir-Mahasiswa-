@@ -20,8 +20,8 @@ android {
     applicationId = "com.aistudio.kelola.kasir"
     minSdk = 24
     targetSdk = 36
-    versionCode = 7
-    versionName = "1.6.0"
+    versionCode = 8
+    versionName = "2.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

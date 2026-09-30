@@ -17,8 +17,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.example.ui.theme.AdaptiveContainer
+import com.example.ui.theme.LocalWindowSizeClass
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -124,6 +129,7 @@ fun ProductScreen(
     }
 
     var isFabExpanded by remember { mutableStateOf(false) }
+    val windowSize = LocalWindowSizeClass.current
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -297,273 +303,318 @@ fun ProductScreen(
             }
         }
     ) { innerPadding ->
+        AdaptiveContainer(maxWidth = 1040.dp) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = KelolaSpacing.ScreenMargin)
+            ) {
+                Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
+
+                Column {
+                    Text(
+                        text = "Manajemen Produk",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Total ${products.size} barang terdaftar",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Search Field
+                SearchField(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    placeholder = "Cari nama barang atau kategori...",
+                    testTag = "inventory_search_input"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Category Chips
+                CategoryChipGroup(
+                    categories = categoryNames,
+                    selectedCategory = selectedCategoryName,
+                    onSelectCategory = { selectedCategoryName = it }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (filteredProducts.isEmpty()) {
+                    EmptyState(
+                        icon = Icons.Default.Inventory2,
+                        title = "Belum Ada Produk",
+                        description = if (searchQuery.isNotEmpty()) "Tidak ada produk yang sesuai dengan pencarian." else "Tambahkan produk jualanmu agar bisa mulai bertransaksi di Kasir.",
+                        buttonText = if (searchQuery.isEmpty()) "+ Tambah Produk Pertama" else null,
+                        onButtonClick = if (searchQuery.isEmpty()) onOpenAddProduct else null,
+                        modifier = Modifier.weight(1f)
+                    )
+                } else if (windowSize.isCompact) {
+                    // Mobile Baseline Layout
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(filteredProducts, key = { it.id }) { product ->
+                            ProductListItemCard(
+                                product = product,
+                                categoryMap = categoryMap,
+                                onEditProduct = onEditProduct,
+                                onRestockProduct = onRestockProduct,
+                                onReduceStockProduct = onReduceStockProduct,
+                                onDeleteProduct = onDeleteProduct
+                            )
+                        }
+                    }
+                } else {
+                    // Tablet & Landscape Multi-Column Adaptive Grid
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 340.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        items(filteredProducts, key = { it.id }) { product ->
+                            ProductListItemCard(
+                                product = product,
+                                categoryMap = categoryMap,
+                                onEditProduct = onEditProduct,
+                                onRestockProduct = onRestockProduct,
+                                onReduceStockProduct = onReduceStockProduct,
+                                onDeleteProduct = onDeleteProduct
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ProductListItemCard(
+    product: ProductEntity,
+    categoryMap: Map<Long, CategoryEntity>,
+    onEditProduct: (ProductEntity) -> Unit,
+    onRestockProduct: (ProductEntity) -> Unit,
+    onReduceStockProduct: (ProductEntity) -> Unit,
+    onDeleteProduct: (ProductEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp)
+            .testTag("product_row_${product.id}"),
+        shape = KelolaRadius.ShapeCard,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, BorderLight),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = KelolaSpacing.ScreenMargin)
+                .fillMaxWidth()
+                .padding(14.dp)
         ) {
-            Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    // Product initials box 44x44
+                    val initials = product.name.take(2).uppercase()
+                    Surface(
+                        modifier = Modifier.size(44.dp),
+                        shape = KelolaRadius.ShapeInput,
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                text = initials,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
 
-            Column {
-                Text(
-                    text = "Manajemen Produk",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Total ${products.size} barang terdaftar",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Column(modifier = Modifier.weight(1f)) {
+                        val catName = categoryMap[product.categoryId]?.name ?: "Umum"
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            EditorialCategoryTag(category = catName)
+
+                            if (product.expirationDate != null) {
+                                val now = System.currentTimeMillis()
+                                val isExpired = product.expirationDate < now
+                                val isExpiringSoon = !isExpired && (product.expirationDate - now) < (7L * 86400000L)
+                                if (isExpired || isExpiringSoon) {
+                                    Surface(
+                                        shape = KelolaRadius.ShapeSmall,
+                                        color = if (isExpired) DangerContainer else WarningContainer
+                                    ) {
+                                        Text(
+                                            text = if (isExpired) "Kadaluarsa" else "Segera Exp.",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (isExpired) DangerRed else WarningAmber,
+                                            fontWeight = FontWeight.SemiBold,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = product.name,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Text(
+                            text = "Modal: ${FormatUtils.formatRupiah(product.costPrice)} • Jual: ${FormatUtils.formatRupiah(product.sellingPrice)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        if (!product.barcode.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Barcode: ${product.barcode}",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
+                StockBadge(
+                    stock = product.stock,
+                    minimumStock = product.minimumStock,
+                    unit = product.unit
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
-
-            // Search Field
-            SearchField(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                placeholder = "Cari nama barang atau kategori...",
-                testTag = "inventory_search_input"
+            androidx.compose.material3.HorizontalDivider(
+                color = BorderLight,
+                thickness = 1.dp
             )
-
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Category Chips
-            CategoryChipGroup(
-                categories = categoryNames,
-                selectedCategory = selectedCategoryName,
-                onSelectCategory = { selectedCategoryName = it }
-            )
+            // Bottom Actions Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left: Restock (+) & Reduce (-) buttons
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Surface(
+                        onClick = { onRestockProduct(product) },
+                        shape = KelolaRadius.ShapeInput,
+                        color = SuccessContainer,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("button_restock_${product.id}")
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "Tambah Stok",
+                                tint = SuccessGreen,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                    Surface(
+                        onClick = { onReduceStockProduct(product) },
+                        shape = KelolaRadius.ShapeInput,
+                        color = WarningContainer,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("button_reduce_stock_${product.id}")
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Default.Remove,
+                                contentDescription = "Kurangi Stok",
+                                tint = WarningAmber,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
 
-            if (filteredProducts.isEmpty()) {
-                EmptyState(
-                    icon = Icons.Default.Inventory2,
-                    title = "Belum Ada Produk",
-                    description = if (searchQuery.isNotEmpty()) "Tidak ada produk yang sesuai dengan pencarian." else "Tambahkan produk jualanmu agar bisa mulai bertransaksi di Kasir.",
-                    buttonText = if (searchQuery.isEmpty()) "+ Tambah Produk Pertama" else null,
-                    onButtonClick = if (searchQuery.isEmpty()) onOpenAddProduct else null,
-                    modifier = Modifier.weight(1f)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp)
-                ) {
-                    items(filteredProducts, key = { it.id }) { product ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp)
-                                .testTag("product_row_${product.id}"),
-                            shape = KelolaRadius.ShapeCard,
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(1.dp, BorderLight),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.Top
-                                ) {
-                                    Row(
-                                        modifier = Modifier.weight(1f),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        verticalAlignment = Alignment.Top
-                                    ) {
-                                        // Product initials box 44x44
-                                        val initials = product.name.take(2).uppercase()
-                                        Surface(
-                                            modifier = Modifier.size(44.dp),
-                                            shape = KelolaRadius.ShapeInput,
-                                            color = MaterialTheme.colorScheme.surfaceVariant
-                                        ) {
-                                            Box(
-                                                contentAlignment = Alignment.Center,
-                                                modifier = Modifier.fillMaxSize()
-                                            ) {
-                                                Text(
-                                                    text = initials,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 14.sp,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            }
-                                        }
+                // Right: Edit & Delete buttons
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Surface(
+                        onClick = { onEditProduct(product) },
+                        shape = KelolaRadius.ShapeInput,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("button_edit_product_${product.id}")
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit Produk",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
 
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            val catName = categoryMap[product.categoryId]?.name ?: "Umum"
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                            ) {
-                                                EditorialCategoryTag(category = catName)
-
-                                                if (product.expirationDate != null) {
-                                                    val now = System.currentTimeMillis()
-                                                    val isExpired = product.expirationDate < now
-                                                    val isExpiringSoon = !isExpired && (product.expirationDate - now) < (7L * 86400000L)
-                                                    if (isExpired || isExpiringSoon) {
-                                                        Surface(
-                                                            shape = KelolaRadius.ShapeSmall,
-                                                            color = if (isExpired) DangerContainer else WarningContainer
-                                                        ) {
-                                                            Text(
-                                                                text = if (isExpired) "Kadaluarsa" else "Segera Exp.",
-                                                                style = MaterialTheme.typography.labelSmall,
-                                                                color = if (isExpired) DangerRed else WarningAmber,
-                                                                fontWeight = FontWeight.SemiBold,
-                                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.height(4.dp))
-
-                                            Text(
-                                                text = product.name,
-                                                style = MaterialTheme.typography.titleSmall,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-
-                                            Spacer(modifier = Modifier.height(2.dp))
-
-                                            Text(
-                                                text = "Modal: ${FormatUtils.formatRupiah(product.costPrice)} • Jual: ${FormatUtils.formatRupiah(product.sellingPrice)}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-
-                                            if (!product.barcode.isNullOrBlank()) {
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = "Barcode: ${product.barcode}",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    fontWeight = FontWeight.Medium
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    StockBadge(
-                                        stock = product.stock,
-                                        minimumStock = product.minimumStock,
-                                        unit = product.unit
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-                                androidx.compose.material3.HorizontalDivider(
-                                    color = BorderLight,
-                                    thickness = 1.dp
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                // Bottom Actions Row
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Left: Restock (+) & Reduce (-) buttons
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Surface(
-                                            onClick = { onRestockProduct(product) },
-                                            shape = KelolaRadius.ShapeInput,
-                                            color = SuccessContainer,
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag("button_restock_${product.id}")
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                                Icon(
-                                                    Icons.Default.Add,
-                                                    contentDescription = "Tambah Stok",
-                                                    tint = SuccessGreen,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-
-                                        Surface(
-                                            onClick = { onReduceStockProduct(product) },
-                                            shape = KelolaRadius.ShapeInput,
-                                            color = WarningContainer,
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag("button_reduce_stock_${product.id}")
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                                Icon(
-                                                    Icons.Default.Remove,
-                                                    contentDescription = "Kurangi Stok",
-                                                    tint = WarningAmber,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    // Right: Edit & Delete buttons
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Surface(
-                                            onClick = { onEditProduct(product) },
-                                            shape = KelolaRadius.ShapeInput,
-                                            color = MaterialTheme.colorScheme.surfaceVariant,
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag("button_edit_product_${product.id}")
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                                Icon(
-                                                    Icons.Default.Edit,
-                                                    contentDescription = "Edit Produk",
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-
-                                        Surface(
-                                            onClick = { onDeleteProduct(product) },
-                                            shape = KelolaRadius.ShapeInput,
-                                            color = DangerContainer,
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .testTag("button_delete_product_${product.id}")
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                                Icon(
-                                                    Icons.Default.Delete,
-                                                    contentDescription = "Hapus Produk",
-                                                    tint = DangerRed,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    Surface(
+                        onClick = { onDeleteProduct(product) },
+                        shape = KelolaRadius.ShapeInput,
+                        color = DangerContainer,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("button_delete_product_${product.id}")
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Hapus Produk",
+                                tint = DangerRed,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 }

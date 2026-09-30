@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ChangeRecordEntity
+import com.example.data.local.entity.CustomerEntity
 import com.example.data.local.entity.DebtEntity
 import com.example.data.local.entity.ExpenseEntity
 import com.example.data.local.entity.IncomeEntity
@@ -75,6 +76,13 @@ data class BankAccount(
     val bankName: String,
     val accountName: String,
     val accountNumber: String
+)
+
+data class CustomerWithStats(
+    val customer: CustomerEntity,
+    val totalPurchases: Int = 0,
+    val totalUnpaid: Long = 0L,
+    val totalPendingChange: Long = 0L
 )
 
 data class DashboardStats(
@@ -565,6 +573,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val notes: StateFlow<List<NoteEntity>> = repository.allNotes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val customers: StateFlow<List<CustomerEntity>> = repository.allCustomers
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val customersWithStats: StateFlow<List<CustomerWithStats>> = combine(
+        repository.allCustomers,
+        repository.allTransactions,
+        repository.allDebts,
+        repository.allChangeRecords
+    ) { customerList, transactionList, debtList, changeRecordList ->
+        customerList.map { customer ->
+            val purchases = transactionList.count { it.customerId == customer.id && it.status != "CANCELLED" }
+            val unpaid = debtList
+                .filter { it.customerId == customer.id && it.status != "PAID" }
+                .sumOf { it.remainingAmount }
+            val pendingChange = changeRecordList
+                .filter { it.customerId == customer.id && it.status == "PENDING" }
+                .sumOf { it.amount }
+            CustomerWithStats(
+                customer = customer,
+                totalPurchases = purchases,
+                totalUnpaid = unpaid,
+                totalPendingChange = pendingChange
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     // --- POS & Cart State ---
     private val _cartMap = MutableStateFlow<Map<Long, Int>>(emptyMap()) // productId -> qty
     private val _cartProducts = MutableStateFlow<Map<Long, ProductEntity>>(emptyMap())
@@ -720,6 +754,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         isChangePending: Boolean = false,
         buyerNameForChange: String = "",
         changeNote: String = "",
+        customerId: Long? = null,
         onSuccess: (TransactionEntity) -> Unit
     ) {
         if (_isProcessingSale.value) return
@@ -769,6 +804,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     total = currentCart.total,
                     paymentMethod = paymentMethod,
                     customerName = customerName.trim(),
+                    customerId = customerId,
                     cashReceived = if (paymentMethod == "Tunai") cashReceived else if (isBayarNanti) 0L else currentCart.total,
                     change = change,
                     status = if (isBayarNanti) "UNPAID" else "COMPLETED"
@@ -792,6 +828,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         transactionId = 0L,
                         customerName = customerName.trim(),
                         customerPhone = customerPhone.trim(),
+                        customerId = customerId,
                         amount = currentCart.total,
                         remainingAmount = currentCart.total,
                         status = "UNPAID",
@@ -803,6 +840,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     ChangeRecordEntity(
                         transactionId = null,
                         buyerName = buyerNameForChange.trim(),
+                        customerId = customerId,
                         amount = change,
                         status = "PENDING",
                         note = changeNote.trim()
@@ -1383,6 +1421,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 root.put("products", prodArray)
 
+                val custArray = JSONArray()
+                for (cust in repository.allCustomersSync()) {
+                    custArray.put(JSONObject().apply {
+                        put("id", cust.id)
+                        put("name", cust.name)
+                        put("phone", cust.phone)
+                        put("notes", cust.notes)
+                        put("createdAt", cust.createdAt)
+                        put("updatedAt", cust.updatedAt)
+                    })
+                }
+                root.put("customers", custArray)
+
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                     onComplete(root.toString(2))
                 }
@@ -1440,6 +1491,56 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.deleteNote(noteId)
             _userMessage.emit("Catatan dihapus")
+        }
+    }
+
+    // --- CUSTOMER MANAGEMENT ---
+    fun addCustomer(customer: CustomerEntity, onComplete: ((CustomerEntity) -> Unit)? = null) {
+        viewModelScope.launch {
+            val trimmedName = customer.name.trim()
+            if (trimmedName.isBlank()) {
+                _userMessage.emit("Nama pelanggan tidak boleh kosong!")
+                return@launch
+            }
+            val toSave = customer.copy(
+                name = trimmedName,
+                phone = customer.phone.trim(),
+                notes = customer.notes.trim(),
+                createdAt = if (customer.createdAt > 0L) customer.createdAt else System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis()
+            )
+            val id = repository.insertCustomer(toSave)
+            val saved = toSave.copy(id = id)
+            _userMessage.emit("Pelanggan '$trimmedName' berhasil ditambahkan.")
+            onComplete?.invoke(saved)
+        }
+    }
+
+    fun updateCustomer(customer: CustomerEntity, onComplete: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            val trimmedName = customer.name.trim()
+            if (trimmedName.isBlank()) {
+                _userMessage.emit("Nama pelanggan tidak boleh kosong!")
+                return@launch
+            }
+            repository.updateCustomer(
+                customer.copy(
+                    name = trimmedName,
+                    phone = customer.phone.trim(),
+                    notes = customer.notes.trim(),
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+            _userMessage.emit("Data pelanggan '$trimmedName' berhasil diperbarui.")
+            onComplete?.invoke()
+        }
+    }
+
+    fun deleteCustomer(customerId: Long, onComplete: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            repository.deleteCustomer(customerId)
+            _userMessage.emit("Pelanggan berhasil dihapus.")
+            onComplete?.invoke()
         }
     }
 }

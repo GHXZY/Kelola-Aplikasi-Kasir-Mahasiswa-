@@ -35,6 +35,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.example.ui.theme.AdaptiveContainer
+import com.example.ui.theme.LocalWindowSizeClass
+import com.example.ui.theme.WindowSizeClassType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.automirrored.filled.Undo
@@ -204,112 +207,165 @@ fun ReportScreen(
         (incList + expList).sortedByDescending { it.date }
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-        contentPadding = PaddingValues(bottom = 80.dp)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) +
-                        slideInVertically(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) { it / 6 }
-            ) {
-                // Period Filter Chips (Radius 10px, Tanpa Border)
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+    AdaptiveContainer(maxWidth = 1040.dp) {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) +
+                            slideInVertically(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) { it / 6 }
                 ) {
-                    items(periods) { period ->
-                        val isSelected = period == selectedPeriod
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { onSelectPeriod(period) },
-                            shape = KelolaRadius.ShapeSmall,
-                            label = {
-                                Text(
-                                    text = period,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                    // Period Filter Chips (Radius 10px, Tanpa Border)
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(periods) { period ->
+                            val isSelected = period == selectedPeriod
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { onSelectPeriod(period) },
+                                shape = KelolaRadius.ShapeSmall,
+                                label = {
+                                    Text(
+                                        text = period,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else BorderLight)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Key Metric Summary Cards
+            item {
+                val windowSizeClass = LocalWindowSizeClass.current
+                val isTablet = windowSizeClass != WindowSizeClassType.COMPACT
+
+                if (isTablet) {
+                    AnimatedVisibility(
+                        visible = isVisible,
+                        enter = fadeIn(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) +
+                                slideInVertically(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) { it / 6 }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            SummaryCard(
+                                title = "Penjualan",
+                                value = FormatUtils.formatRupiah(reportStats.totalSales),
+                                subtitle = "${reportStats.transactionCount} transaksi",
+                                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                                contentColor = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            SummaryCard(
+                                title = "Keuntungan (Kotor)",
+                                value = FormatUtils.formatRupiah(reportStats.grossProfit),
+                                subtitle = "${reportStats.itemsSold} item terjual",
+                                icon = Icons.Default.MonetizationOn,
+                                contentColor = SuccessGreen,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            SummaryCard(
+                                title = "Pengeluaran",
+                                value = FormatUtils.formatRupiah(reportStats.totalExpense),
+                                subtitle = "Beban usaha",
+                                icon = Icons.Default.TrendingDown,
+                                contentColor = DangerRed,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            SummaryCard(
+                                title = "Arus Kas Bersih",
+                                value = FormatUtils.formatRupiah(reportStats.netCashflow),
+                                subtitle = "Pemasukan - beban",
+                                icon = Icons.Default.Receipt,
+                                contentColor = SecondaryTeal,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = fadeIn(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) +
+                                    slideInVertically(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) { it / 6 }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                SummaryCard(
+                                    title = "Penjualan",
+                                    value = FormatUtils.formatRupiah(reportStats.totalSales),
+                                    subtitle = "${reportStats.transactionCount} transaksi",
+                                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                                    contentColor = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
                                 )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else BorderLight)
-                        )
+
+                                SummaryCard(
+                                    title = "Keuntungan (Kotor)",
+                                    value = FormatUtils.formatRupiah(reportStats.grossProfit),
+                                    subtitle = "${reportStats.itemsSold} item terjual",
+                                    icon = Icons.Default.MonetizationOn,
+                                    contentColor = SuccessGreen,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = fadeIn(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) +
+                                    slideInVertically(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) { it / 6 }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                SummaryCard(
+                                    title = "Pengeluaran",
+                                    value = FormatUtils.formatRupiah(reportStats.totalExpense),
+                                    subtitle = "Beban usaha",
+                                    icon = Icons.Default.TrendingDown,
+                                    contentColor = DangerRed,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                SummaryCard(
+                                    title = "Arus Kas Bersih",
+                                    value = FormatUtils.formatRupiah(reportStats.netCashflow),
+                                    subtitle = "Pemasukan - beban",
+                                    icon = Icons.Default.Receipt,
+                                    contentColor = SecondaryTeal,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
                     }
                 }
             }
-        }
-
-        // Key Metric Summary Cards
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) +
-                            slideInVertically(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) { it / 6 }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        SummaryCard(
-                            title = "Penjualan",
-                            value = FormatUtils.formatRupiah(reportStats.totalSales),
-                            subtitle = "${reportStats.transactionCount} transaksi",
-                            icon = Icons.AutoMirrored.Filled.TrendingUp,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        SummaryCard(
-                            title = "Keuntungan (Kotor)",
-                            value = FormatUtils.formatRupiah(reportStats.grossProfit),
-                            subtitle = "${reportStats.itemsSold} item terjual",
-                            icon = Icons.Default.MonetizationOn,
-                            contentColor = SuccessGreen,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) +
-                            slideInVertically(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) { it / 6 }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        SummaryCard(
-                            title = "Pengeluaran",
-                            value = FormatUtils.formatRupiah(reportStats.totalExpense),
-                            subtitle = "Beban usaha",
-                            icon = Icons.Default.TrendingDown,
-                            contentColor = DangerRed,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        SummaryCard(
-                            title = "Arus Kas Bersih",
-                            value = FormatUtils.formatRupiah(reportStats.netCashflow),
-                            subtitle = "Pemasukan - beban",
-                            icon = Icons.Default.Receipt,
-                            contentColor = SecondaryTeal,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-        }
 
         // Subtabs: Ringkasan & Tren, Transaksi, Arus Kas
         item {
@@ -1057,6 +1113,7 @@ fun ReportScreen(
                 }
             }
         }
+    }
     }
 
     itemToDelete?.let { item ->

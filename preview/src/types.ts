@@ -62,6 +62,8 @@ export interface TransactionEntity {
   cashReceived: number;
   change: number;
   paymentMethod: string;
+  customerName?: string;
+  customerId?: number | null;
   status: 'COMPLETED' | 'CANCELLED';
   createdAt: number;
 }
@@ -83,12 +85,29 @@ export interface DebtEntity {
   transactionNumber: string;
   customerName: string;
   customerPhone: string;
+  customerId?: number | null;
   amount: number;
   remainingAmount: number;
   dueDate: string;
   note: string;
   status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
   createdAt: number;
+}
+
+export interface CustomerEntity {
+  id: number;
+  name: string;
+  phone: string;
+  notes: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CustomerWithStats {
+  customer: CustomerEntity;
+  totalPurchases: number;
+  totalUnpaid: number;
+  totalPendingChange: number;
 }
 
 export interface ExpenseEntity {
@@ -135,6 +154,7 @@ export interface ChangeRecordEntity {
   transactionId?: number | null;
   transactionNumber: string;
   buyerName: string;
+  customerId?: number | null;
   amount: number;
   status: 'PENDING' | 'PAID';
   note: string;

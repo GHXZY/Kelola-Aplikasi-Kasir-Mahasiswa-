@@ -18,6 +18,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import com.example.ui.theme.AdaptiveContainer
+import com.example.ui.theme.LocalWindowSizeClass
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -121,120 +127,242 @@ fun DebtsScreen(
         debts.sumOf { it.amount - it.remainingAmount }
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            // Header
-            Column {
-                Text(
-                    text = "Daftar Kasbon",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Kelola tagihan bayar nanti dan pelunasan.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+    val windowSize = LocalWindowSizeClass.current
 
-        // Summary Stats (2 cards)
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+    AdaptiveContainer(maxWidth = 1040.dp) {
+        if (windowSize.isCompact) {
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                SummaryCard(
-                    title = "Sisa Kasbon",
-                    value = FormatUtils.formatRupiah(totalUnpaidAmount),
-                    subtitle = "$unpaidCount orang belum lunas",
-                    icon = Icons.Default.HourglassTop,
-                    contentColor = WarningAmber,
-                    modifier = Modifier.weight(1f),
-                    testTag = "summary_unpaid_debt"
-                )
-
-                SummaryCard(
-                    title = "Total Dilunasi",
-                    value = FormatUtils.formatRupiah(totalPaidAmount),
-                    subtitle = "Sudah diterima",
-                    icon = Icons.Default.AssignmentTurnedIn,
-                    contentColor = SuccessGreen,
-                    modifier = Modifier.weight(1f),
-                    testTag = "summary_paid_debt"
-                )
-            }
-        }
-
-        // Search and Filter Bar
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SearchField(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    placeholder = "Cari nama atau no. transaksi...",
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(filterOptions) { filter ->
-                        val isSelected = filter == selectedFilter
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { selectedFilter = filter },
-                            shape = KelolaRadius.ShapeSmall,
-                            label = { Text(filter, fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else BorderLight)
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    // Header
+                    Column {
+                        Text(
+                            text = "Daftar Kasbon",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Kelola tagihan bayar nanti dan pelunasan.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-            }
-        }
 
-        // Debt Items List
-        if (filteredDebts.isEmpty()) {
-            item {
-                EmptyState(
-                    icon = Icons.Default.HourglassBottom,
-                    title = if (debts.isEmpty()) "Belum Ada Kasbon" else "Tidak Ditemukan",
-                    description = if (debts.isEmpty()) {
-                        "Transaksi dengan metode pembayaran 'Bayar Nanti' akan otomatis tercatat di list ini."
-                    } else {
-                        "Tidak ada data penghutang yang sesuai dengan kata kunci atau filter saat ini."
-                    },
-                    modifier = Modifier.padding(top = 24.dp)
-                )
+                // Summary Stats (2 cards)
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        SummaryCard(
+                            title = "Sisa Kasbon",
+                            value = FormatUtils.formatRupiah(totalUnpaidAmount),
+                            subtitle = "$unpaidCount orang belum lunas",
+                            icon = Icons.Default.HourglassTop,
+                            contentColor = WarningAmber,
+                            modifier = Modifier.weight(1f),
+                            testTag = "summary_unpaid_debt"
+                        )
+
+                        SummaryCard(
+                            title = "Total Dilunasi",
+                            value = FormatUtils.formatRupiah(totalPaidAmount),
+                            subtitle = "Sudah diterima",
+                            icon = Icons.Default.AssignmentTurnedIn,
+                            contentColor = SuccessGreen,
+                            modifier = Modifier.weight(1f),
+                            testTag = "summary_paid_debt"
+                        )
+                    }
+                }
+
+                // Search and Filter Bar
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        SearchField(
+                            query = searchQuery,
+                            onQueryChange = { searchQuery = it },
+                            placeholder = "Cari nama atau no. transaksi...",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(filterOptions) { filter ->
+                                val isSelected = filter == selectedFilter
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { selectedFilter = filter },
+                                    shape = KelolaRadius.ShapeSmall,
+                                    label = { Text(filter, fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else BorderLight)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Debt Items List
+                if (filteredDebts.isEmpty()) {
+                    item {
+                        EmptyState(
+                            icon = Icons.Default.HourglassBottom,
+                            title = if (debts.isEmpty()) "Belum Ada Kasbon" else "Tidak Ditemukan",
+                            description = if (debts.isEmpty()) {
+                                "Transaksi dengan metode pembayaran 'Bayar Nanti' akan otomatis tercatat di list ini."
+                            } else {
+                                "Tidak ada data penghutang yang sesuai dengan kata kunci atau filter saat ini."
+                            },
+                            modifier = Modifier.padding(top = 24.dp)
+                        )
+                    }
+                } else {
+                    items(filteredDebts, key = { it.id }) { debt ->
+                        DebtItemCard(
+                            debt = debt,
+                            onSettle = { onSettleDebt(debt) },
+                            onEditItems = { onEditDebtItems(debt) },
+                            onViewTransaction = { onSelectTransactionNumber(debt.transactionNumber) },
+                            onDelete = { onDeleteDebt(debt) }
+                        )
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         } else {
-            items(filteredDebts, key = { it.id }) { debt ->
-                DebtItemCard(
-                    debt = debt,
-                    onSettle = { onSettleDebt(debt) },
-                    onEditItems = { onEditDebtItems(debt) },
-                    onViewTransaction = { onSelectTransactionNumber(debt.transactionNumber) },
-                    onDelete = { onDeleteDebt(debt) }
-                )
-            }
-        }
+            // Adaptive Grid for Tablet / Landscape
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 340.dp),
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Daftar Kasbon",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Kelola tagihan bayar nanti dan pelunasan.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
 
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        SummaryCard(
+                            title = "Sisa Kasbon",
+                            value = FormatUtils.formatRupiah(totalUnpaidAmount),
+                            subtitle = "$unpaidCount orang belum lunas",
+                            icon = Icons.Default.HourglassTop,
+                            contentColor = WarningAmber,
+                            modifier = Modifier.weight(1f),
+                            testTag = "summary_unpaid_debt"
+                        )
+
+                        SummaryCard(
+                            title = "Total Dilunasi",
+                            value = FormatUtils.formatRupiah(totalPaidAmount),
+                            subtitle = "Sudah diterima",
+                            icon = Icons.Default.AssignmentTurnedIn,
+                            contentColor = SuccessGreen,
+                            modifier = Modifier.weight(1f),
+                            testTag = "summary_paid_debt"
+                        )
+                    }
+                }
+
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        SearchField(
+                            query = searchQuery,
+                            onQueryChange = { searchQuery = it },
+                            placeholder = "Cari nama atau no. transaksi...",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(filterOptions) { filter ->
+                                val isSelected = filter == selectedFilter
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { selectedFilter = filter },
+                                    shape = KelolaRadius.ShapeSmall,
+                                    label = { Text(filter, fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else BorderLight)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (filteredDebts.isEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        EmptyState(
+                            icon = Icons.Default.HourglassBottom,
+                            title = if (debts.isEmpty()) "Belum Ada Kasbon" else "Tidak Ditemukan",
+                            description = if (debts.isEmpty()) {
+                                "Transaksi dengan metode pembayaran 'Bayar Nanti' akan otomatis tercatat di list ini."
+                            } else {
+                                "Tidak ada data penghutang yang sesuai dengan kata kunci atau filter saat ini."
+                            },
+                            modifier = Modifier.padding(top = 24.dp)
+                        )
+                    }
+                } else {
+                    items(filteredDebts, key = { it.id }) { debt ->
+                        DebtItemCard(
+                            debt = debt,
+                            onSettle = { onSettleDebt(debt) },
+                            onEditItems = { onEditDebtItems(debt) },
+                            onViewTransaction = { onSelectTransactionNumber(debt.transactionNumber) },
+                            onDelete = { onDeleteDebt(debt) }
+                        )
+                    }
+                }
+
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
         }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PointOfSale
 import androidx.compose.material.icons.filled.Receipt
@@ -77,6 +78,7 @@ import com.example.data.local.entity.TransactionEntity
 import com.example.ui.DashboardStats
 import com.example.ui.components.StockBadge
 import com.example.ui.components.SummaryCard
+import com.example.ui.theme.AdaptiveContainer
 import com.example.ui.theme.BrandDeep
 import com.example.ui.theme.BrandSky
 import com.example.ui.theme.DangerContainer
@@ -85,6 +87,7 @@ import com.example.ui.theme.GradientBrand
 import com.example.ui.theme.KelolaRadius
 import com.example.ui.theme.KelolaSpacing
 import com.example.ui.theme.KelolaTheme
+import com.example.ui.theme.LocalWindowSizeClass
 import com.example.ui.theme.PrimaryBlue
 import com.example.ui.theme.SuccessContainer
 import com.example.ui.theme.SuccessGreen
@@ -112,496 +115,167 @@ fun HomeScreen(
     onSettleDebt: (DebtEntity) -> Unit = {},
     onEditDebtItems: (DebtEntity) -> Unit = {},
     onOpenNotes: () -> Unit = {},
+    onOpenCustomers: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val activeBalance = openingCapital + stats.todaySales - stats.todayExpense
     var isVisible by remember { mutableStateOf(false) }
+    val windowSize = LocalWindowSizeClass.current
+
     LaunchedEffect(Unit) {
         isVisible = true
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = KelolaSpacing.ScreenMargin),
-        verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
-    ) {
-        // Spacing di atas Hero Saldo: 12dp untuk visual hierarchy yang pas di mobile
-        item {
-            Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
-        }
-
-        // =========================================================================
-        // KELOLA HERO SALDO (Momen Visual Utama: Radius 16px, Gradient Brand, Tanpa Border)
-        // =========================================================================
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) +
-                        slideInVertically(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) { it / 6 }
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .kelolaSoftShadow(shape = KelolaRadius.ShapeHero, elevation = 4.dp)
-                        .testTag("hero_saldo_card"),
-                    shape = KelolaRadius.ShapeHero,
-                    color = Color.Transparent
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(GradientBrand)
-                            .padding(20.dp)
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            // Business badge & status
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(8.dp)
-                                            .clip(CircleShape)
-                                            .background(Color(0xFF34D399))
-                                    )
-                                    Text(
-                                        text = "Saldo Kas Toko Saat Ini",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = Color.White.copy(alpha = 0.90f),
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-
-                                if (openingCapital > 0L) {
-                                    Surface(
-                                        shape = KelolaRadius.ShapeSmall,
-                                        color = Color.White.copy(alpha = 0.18f)
-                                    ) {
-                                        Text(
-                                            text = "Modal: ${FormatUtils.formatRupiah(openingCapital)}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Medium,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // Nominal Finansial Utama dengan animasi angka
-                            AnimatedContent(
-                                targetState = FormatUtils.formatRupiah(activeBalance),
-                                transitionSpec = {
-                                    (fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) +
-                                        slideInVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it / 4 })
-                                        .togetherWith(
-                                            fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing)) +
-                                            slideOutVertically(animationSpec = tween(200, easing = FastOutSlowInEasing)) { -it / 4 }
-                                        )
-                                },
-                                label = "HeroSaldoValueAnim"
-                            ) { animatedBalance ->
-                                Text(
-                                    text = animatedBalance,
-                                    style = MaterialTheme.typography.displayMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            // Divider line
-                            HorizontalDivider(
-                                color = Color.White.copy(alpha = 0.15f),
-                                thickness = 1.dp
-                            )
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // Footer breakdown
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Penjualan Hari Ini",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = Color.White.copy(alpha = 0.80f),
-                                        fontSize = 11.sp
-                                    )
-                                    AnimatedContent(
-                                        targetState = "+${FormatUtils.formatRupiah(stats.todaySales)}",
-                                        transitionSpec = {
-                                            (fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) +
-                                                slideInVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it / 4 })
-                                                .togetherWith(
-                                                    fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing)) +
-                                                    slideOutVertically(animationSpec = tween(200, easing = FastOutSlowInEasing)) { -it / 4 }
-                                                )
-                                        },
-                                        label = "HeroSalesAnim"
-                                    ) { animSales ->
-                                        Text(
-                                            text = animSales,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = Color(0xFF6EE7B7),
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    }
-                                }
-                                Column(horizontalAlignment = Alignment.End) {
-                                    Text(
-                                        text = "Pengeluaran",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = Color.White.copy(alpha = 0.80f),
-                                        fontSize = 11.sp
-                                    )
-                                    AnimatedContent(
-                                        targetState = "-${FormatUtils.formatRupiah(stats.todayExpense)}",
-                                        transitionSpec = {
-                                            (fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) +
-                                                slideInVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it / 4 })
-                                                .togetherWith(
-                                                    fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing)) +
-                                                    slideOutVertically(animationSpec = tween(200, easing = FastOutSlowInEasing)) { -it / 4 }
-                                                )
-                                        },
-                                        label = "HeroExpenseAnim"
-                                    ) { animExpense ->
-                                        Text(
-                                            text = animExpense,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = Color(0xFFFCA5A5),
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+    AdaptiveContainer(modifier = modifier, maxWidth = 1040.dp) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = KelolaSpacing.ScreenMargin),
+            verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
+        ) {
+            // Spacing di atas Hero Saldo: 12dp untuk visual hierarchy yang pas di mobile
+            item {
+                Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
             }
-        }
 
-        // Section Ringkasan Hari Ini
-        item {
-            Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
-            Text(
-                text = "Ringkasan Hari Ini",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        // Summary Cards (2 Columns: Omset Kasir & Pengeluaran)
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) +
-                        slideInVertically(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) { it / 6 }
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
-                ) {
-                    SummaryCard(
-                        title = "Omset Kasir",
-                        value = FormatUtils.formatRupiah(stats.todaySales),
-                        subtitle = "${stats.todayTxCount} transaksi selesai",
-                        icon = Icons.AutoMirrored.Filled.TrendingUp,
-                        contentColor = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f),
-                        testTag = "summary_sales"
-                    )
-
-                    SummaryCard(
-                        title = "Pengeluaran",
-                        value = FormatUtils.formatRupiah(stats.todayExpense),
-                        subtitle = "Hari ini",
-                        icon = Icons.AutoMirrored.Filled.TrendingDown,
-                        contentColor = KelolaTheme.negative,
-                        modifier = Modifier.weight(1f),
-                        testTag = "summary_expense"
+            if (windowSize.isCompact) {
+                // =========================================================================
+                // MOBILE BASELINE (100% UNCHANGED)
+                // =========================================================================
+                item {
+                    HeroSaldoCard(
+                        openingCapital = openingCapital,
+                        activeBalance = activeBalance,
+                        todaySales = stats.todaySales,
+                        todayExpense = stats.todayExpense,
+                        isVisible = isVisible
                     )
                 }
-            }
-        }
 
-        // ==========================================
-        // SECTION 1: RINGKASAN KEMBALIAN BELUM DIBERIKAN (Klik -> Laman Kembalian)
-        // ==========================================
-        item {
-            val hasPending = stats.pendingChangeList.isNotEmpty()
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) +
-                        slideInVertically(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) { it / 6 }
-            ) {
-                Card(
-                    onClick = onNavigateToPendingChanges,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp)
-                        .testTag("card_pending_change_summary"),
-                    shape = KelolaRadius.ShapeCard,
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
+                item {
+                    Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
+                    Text(
+                        text = "Ringkasan Hari Ini",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                item {
+                    TodaySummaryCards(
+                        todaySales = stats.todaySales,
+                        todayTxCount = stats.todayTxCount,
+                        todayExpense = stats.todayExpense,
+                        isVisible = isVisible
+                    )
+                }
+
+                item {
+                    PendingChangeSummaryCard(
+                        stats = stats,
+                        isVisible = isVisible,
+                        onClick = onNavigateToPendingChanges
+                    )
+                }
+
+                item {
+                    UnpaidDebtSummaryCard(
+                        stats = stats,
+                        isVisible = isVisible,
+                        onClick = onNavigateToDebts
+                    )
+                }
+
+                item {
+                    NotesShortcutCard(
+                        isVisible = isVisible,
+                        onClick = onOpenNotes
+                    )
+                }
+
+                item {
+                    CustomersShortcutCard(
+                        isVisible = isVisible,
+                        onClick = onOpenCustomers
+                    )
+                }
+            } else {
+                // =========================================================================
+                // TABLET / MEDIUM / EXPANDED ADAPTIVE LAYOUT
+                // =========================================================================
+                item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4),
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
-                            modifier = Modifier.weight(1f)
+                        HeroSaldoCard(
+                            openingCapital = openingCapital,
+                            activeBalance = activeBalance,
+                            todaySales = stats.todaySales,
+                            todayExpense = stats.todayExpense,
+                            isVisible = isVisible,
+                            modifier = Modifier.weight(1.15f)
+                        )
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(if (hasPending) WarningContainer else SuccessContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Paid,
-                                    contentDescription = null,
-                                    tint = if (hasPending) WarningAmber else SuccessGreen,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-                            Column(modifier = Modifier.weight(1f, fill = false)) {
-                                Text(
-                                    text = "Kembalian Belum Diberikan",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = FormatUtils.formatRupiah(stats.pendingChangeTotal),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (hasPending) KelolaTheme.negative else MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = if (hasPending) {
-                                        "${stats.pendingChangeList.size} Transaksi Tertunda"
-                                    } else {
-                                        "Semua kembalian beres diberikan 👏"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = "Buka Kembalian",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
+                            Text(
+                                text = "Ringkasan Hari Ini",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            TodaySummaryCards(
+                                todaySales = stats.todaySales,
+                                todayTxCount = stats.todayTxCount,
+                                todayExpense = stats.todayExpense,
+                                isVisible = isVisible
                             )
                         }
                     }
                 }
-            }
-        }
 
-        // ==========================================
-        // SECTION 2: RINGKASAN ORANG BELUM BAYAR / KASBON (Klik -> Laman Kasbon)
-        // ==========================================
-        item {
-            val hasDebts = stats.unpaidDebtCount > 0
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(animationSpec = tween(300, delayMillis = 180, easing = FastOutSlowInEasing)) +
-                        slideInVertically(animationSpec = tween(300, delayMillis = 180, easing = FastOutSlowInEasing)) { it / 6 }
-            ) {
-                Card(
-                    onClick = onNavigateToDebts,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp)
-                        .testTag("card_unpaid_debts_summary"),
-                    shape = KelolaRadius.ShapeCard,
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
+                item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        PendingChangeSummaryCard(
+                            stats = stats,
+                            isVisible = isVisible,
+                            onClick = onNavigateToPendingChanges,
                             modifier = Modifier.weight(1f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(if (hasDebts) DangerContainer else SuccessContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.HourglassTop,
-                                    contentDescription = null,
-                                    tint = if (hasDebts) DangerRed else SuccessGreen,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-                            Column(modifier = Modifier.weight(1f, fill = false)) {
-                                Text(
-                                    text = "Orang Belum Bayar (Kasbon)",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = FormatUtils.formatRupiah(stats.unpaidDebtTotal),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (hasDebts) KelolaTheme.negative else MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = if (hasDebts) {
-                                        "${stats.unpaidDebtCount} Orang Belum Lunas"
-                                    } else {
-                                        "Semua kasbon lunas 👏"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = "Buka Kasbon",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
+                        )
+                        UnpaidDebtSummaryCard(
+                            stats = stats,
+                            isVisible = isVisible,
+                            onClick = onNavigateToDebts,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
-            }
-        }
 
-        // ==========================================
-        // SECTION: CATATAN & RIWAYAT TOKO (Di bawah section Kasbon)
-        // ==========================================
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(animationSpec = tween(300, delayMillis = 240, easing = FastOutSlowInEasing)) +
-                        slideInVertically(animationSpec = tween(300, delayMillis = 240, easing = FastOutSlowInEasing)) { it / 6 }
-            ) {
-                Surface(
-                    onClick = onOpenNotes,
-                    shape = KelolaRadius.ShapeMedium,
-                    color = MaterialTheme.colorScheme.surface,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .kelolaSoftShadow(KelolaRadius.ShapeMedium, 2.dp)
-                        .testTag("button_open_notes_home")
-                ) {
+                item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                modifier = Modifier.size(38.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.EditNote,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                            Column {
-                                Text(
-                                    text = "Catatan & Riwayat Toko",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Pengingat stok, catatan transaksi & aktivitas",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Buka Catatan",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                        NotesShortcutCard(
+                            isVisible = isVisible,
+                            onClick = onOpenNotes,
+                            modifier = Modifier.weight(1f)
+                        )
+                        CustomersShortcutCard(
+                            isVisible = isVisible,
+                            onClick = onOpenCustomers,
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
             }
-        }
 
         // Section: Produk Hampir Habis
         item {
@@ -913,6 +587,560 @@ fun HomeScreen(
 
         item {
             Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+    }
+}
+
+@Composable
+private fun HeroSaldoCard(
+    openingCapital: Long,
+    activeBalance: Long,
+    todaySales: Long,
+    todayExpense: Long,
+    isVisible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) +
+                slideInVertically(animationSpec = tween(300, delayMillis = 0, easing = FastOutSlowInEasing)) { it / 6 },
+        modifier = modifier
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .kelolaSoftShadow(shape = KelolaRadius.ShapeHero, elevation = 4.dp)
+                .testTag("hero_saldo_card"),
+            shape = KelolaRadius.ShapeHero,
+            color = Color.Transparent
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(GradientBrand)
+                    .padding(20.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF34D399))
+                            )
+                            Text(
+                                text = "Saldo Kas Toko Saat Ini",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White.copy(alpha = 0.90f),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        if (openingCapital > 0L) {
+                            Surface(
+                                shape = KelolaRadius.ShapeSmall,
+                                color = Color.White.copy(alpha = 0.18f)
+                            ) {
+                                Text(
+                                    text = "Modal: ${FormatUtils.formatRupiah(openingCapital)}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    AnimatedContent(
+                        targetState = FormatUtils.formatRupiah(activeBalance),
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) +
+                                slideInVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it / 4 })
+                                .togetherWith(
+                                    fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing)) +
+                                    slideOutVertically(animationSpec = tween(200, easing = FastOutSlowInEasing)) { -it / 4 }
+                                )
+                        },
+                        label = "HeroSaldoValueAnim"
+                    ) { animatedBalance ->
+                        Text(
+                            text = animatedBalance,
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    HorizontalDivider(
+                        color = Color.White.copy(alpha = 0.15f),
+                        thickness = 1.dp
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Penjualan Hari Ini",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.80f),
+                                fontSize = 11.sp
+                            )
+                            AnimatedContent(
+                                targetState = "+${FormatUtils.formatRupiah(todaySales)}",
+                                transitionSpec = {
+                                    (fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) +
+                                        slideInVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it / 4 })
+                                        .togetherWith(
+                                            fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing)) +
+                                            slideOutVertically(animationSpec = tween(200, easing = FastOutSlowInEasing)) { -it / 4 }
+                                        )
+                                },
+                                label = "HeroSalesAnim"
+                            ) { animSales ->
+                                Text(
+                                    text = animSales,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF6EE7B7),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Pengeluaran",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.80f),
+                                fontSize = 11.sp
+                            )
+                            AnimatedContent(
+                                targetState = "-${FormatUtils.formatRupiah(todayExpense)}",
+                                transitionSpec = {
+                                    (fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) +
+                                        slideInVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { it / 4 })
+                                        .togetherWith(
+                                            fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing)) +
+                                            slideOutVertically(animationSpec = tween(200, easing = FastOutSlowInEasing)) { -it / 4 }
+                                        )
+                                },
+                                label = "HeroExpenseAnim"
+                            ) { animExpense ->
+                                Text(
+                                    text = animExpense,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFFFCA5A5),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TodaySummaryCards(
+    todaySales: Long,
+    todayTxCount: Int,
+    todayExpense: Long,
+    isVisible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) +
+                slideInVertically(animationSpec = tween(300, delayMillis = 60, easing = FastOutSlowInEasing)) { it / 6 },
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
+        ) {
+            SummaryCard(
+                title = "Omset Kasir",
+                value = FormatUtils.formatRupiah(todaySales),
+                subtitle = "$todayTxCount transaksi selesai",
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                contentColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f),
+                testTag = "summary_sales"
+            )
+
+            SummaryCard(
+                title = "Pengeluaran",
+                value = FormatUtils.formatRupiah(todayExpense),
+                subtitle = "Hari ini",
+                icon = Icons.AutoMirrored.Filled.TrendingDown,
+                contentColor = KelolaTheme.negative,
+                modifier = Modifier.weight(1f),
+                testTag = "summary_expense"
+            )
+        }
+    }
+}
+
+@Composable
+private fun PendingChangeSummaryCard(
+    stats: DashboardStats,
+    isVisible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val hasPending = stats.pendingChangeList.isNotEmpty()
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) +
+                slideInVertically(animationSpec = tween(300, delayMillis = 120, easing = FastOutSlowInEasing)) { it / 6 },
+        modifier = modifier
+    ) {
+        Card(
+            onClick = onClick,
+            modifier = modifier
+                .fillMaxWidth()
+                .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp)
+                .testTag("card_pending_change_summary"),
+            shape = KelolaRadius.ShapeCard,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(if (hasPending) WarningContainer else SuccessContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Paid,
+                            contentDescription = null,
+                            tint = if (hasPending) WarningAmber else SuccessGreen,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
+                        Text(
+                            text = "Kembalian Belum Diberikan",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = FormatUtils.formatRupiah(stats.pendingChangeTotal),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (hasPending) KelolaTheme.negative else MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = if (hasPending) {
+                                "${stats.pendingChangeList.size} Transaksi Tertunda"
+                            } else {
+                                "Semua kembalian beres diberikan 👏"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Buka Kembalian",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UnpaidDebtSummaryCard(
+    stats: DashboardStats,
+    isVisible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val hasDebts = stats.unpaidDebtCount > 0
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(300, delayMillis = 180, easing = FastOutSlowInEasing)) +
+                slideInVertically(animationSpec = tween(300, delayMillis = 180, easing = FastOutSlowInEasing)) { it / 6 },
+        modifier = modifier
+    ) {
+        Card(
+            onClick = onClick,
+            modifier = modifier
+                .fillMaxWidth()
+                .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp)
+                .testTag("card_unpaid_debts_summary"),
+            shape = KelolaRadius.ShapeCard,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(if (hasDebts) DangerContainer else SuccessContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.HourglassTop,
+                            contentDescription = null,
+                            tint = if (hasDebts) DangerRed else SuccessGreen,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
+                        Text(
+                            text = "Orang Belum Bayar (Kasbon)",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = FormatUtils.formatRupiah(stats.unpaidDebtTotal),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (hasDebts) KelolaTheme.negative else MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = if (hasDebts) {
+                                "${stats.unpaidDebtCount} Orang Belum Lunas"
+                            } else {
+                                "Semua kasbon lunas 👏"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Buka Kasbon",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotesShortcutCard(
+    isVisible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(300, delayMillis = 240, easing = FastOutSlowInEasing)) +
+                slideInVertically(animationSpec = tween(300, delayMillis = 240, easing = FastOutSlowInEasing)) { it / 6 },
+        modifier = modifier
+    ) {
+        Surface(
+            onClick = onClick,
+            shape = KelolaRadius.ShapeMedium,
+            color = MaterialTheme.colorScheme.surface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = modifier
+                .fillMaxWidth()
+                .kelolaSoftShadow(KelolaRadius.ShapeMedium, 2.dp)
+                .testTag("button_open_notes_home")
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        modifier = Modifier.size(38.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.EditNote,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+                    Column {
+                        Text(
+                            text = "Catatan & Riwayat Toko",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Pengingat stok, catatan transaksi & aktivitas",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Buka Catatan",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomersShortcutCard(
+    isVisible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(300, delayMillis = 260, easing = FastOutSlowInEasing)) +
+                slideInVertically(animationSpec = tween(300, delayMillis = 260, easing = FastOutSlowInEasing)) { it / 6 },
+        modifier = modifier
+    ) {
+        Surface(
+            onClick = onClick,
+            shape = KelolaRadius.ShapeMedium,
+            color = MaterialTheme.colorScheme.surface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = modifier
+                .fillMaxWidth()
+                .kelolaSoftShadow(KelolaRadius.ShapeMedium, 2.dp)
+                .testTag("button_open_customers_home")
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        modifier = Modifier.size(38.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.People,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+                    Column {
+                        Text(
+                            text = "List Pelanggan",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Kelola pelanggan, kasbon & kembalian tertunda",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Buka List Pelanggan",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }

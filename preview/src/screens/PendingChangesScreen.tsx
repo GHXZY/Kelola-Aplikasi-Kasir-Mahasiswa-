@@ -65,30 +65,33 @@ export const PendingChangesScreen: React.FC<PendingChangesScreenProps> = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F9FF]">
       {/* Top Bar */}
-      <div className="p-4 bg-white border-b border-slate-200/80 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onNavigateBack}
-            data-testid="button_back_from_pending_changes"
-            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
-          >
-            <ArrowLeft className="w-5 h-5 text-brand-primary" />
-          </button>
-          <div>
-            <h1 className="text-base font-bold text-slate-800">Kembalian Belum Diberikan</h1>
-            <p className="text-xs text-slate-500">Kelola pengembalian uang pelanggan kasir</p>
+      <div className="p-4 bg-white border-b border-slate-200/80 flex-shrink-0">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onNavigateBack}
+              data-testid="button_back_from_pending_changes"
+              className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
+            >
+              <ArrowLeft className="w-5 h-5 text-brand-primary" />
+            </button>
+            <div>
+              <h1 className="text-base font-bold text-slate-800">Kembalian Belum Diberikan</h1>
+              <p className="text-xs text-slate-500">Kelola pengembalian uang pelanggan kasir</p>
+            </div>
           </div>
-        </div>
 
-        <div className="w-9 h-9 rounded-full bg-amber-100/70 flex items-center justify-center text-amber-600">
-          <Coins className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-full bg-amber-100/70 flex items-center justify-center text-amber-600">
+            <Coins className="w-5 h-5" />
+          </div>
         </div>
       </div>
 
       {/* Main Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
-        {/* Stats Summary Cards */}
-        <div className="grid grid-cols-2 gap-3">
+      <div className="flex-1 overflow-y-auto p-4 pb-20 md:p-6">
+        <div className="max-w-6xl mx-auto space-y-4">
+          {/* Stats Summary Cards */}
+          <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-card p-3.5 border border-amber-200 shadow-soft bg-gradient-to-br from-amber-50/50 to-white">
             <div className="flex items-center justify-between text-amber-700 mb-1">
               <span className="text-xs font-semibold">Total Tertunda</span>
@@ -170,7 +173,7 @@ export const PendingChangesScreen: React.FC<PendingChangesScreenProps> = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 space-y-0">
             {filteredRecords.map((item) => {
               const isPending = item.status === 'PENDING';
               return (
@@ -237,6 +240,7 @@ export const PendingChangesScreen: React.FC<PendingChangesScreenProps> = ({
             })}
           </div>
         )}
+        </div>
       </div>
 
       {/* Confirmation Dialog */}

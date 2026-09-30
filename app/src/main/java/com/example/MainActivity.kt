@@ -104,6 +104,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.example.ui.notes.NotesScreen
+import com.example.ui.customers.CustomerListScreen
 import com.example.ui.debts.DebtPaymentScreen
 
 import com.example.ui.debts.SettleDebtDialog
@@ -128,6 +129,7 @@ import com.example.ui.theme.BrandPrimary
 import com.example.ui.theme.BrandSky
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.KelolaSpacing
+import com.example.ui.theme.LocalWindowSizeClass
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.OnPrimaryBlueContainer
 import com.example.ui.theme.PrimaryBlue
@@ -136,6 +138,7 @@ import com.example.ui.theme.SuccessDot
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.WarningAmber
+import com.example.ui.theme.rememberWindowSizeClass
 import com.example.util.FormatUtils
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -173,35 +176,16 @@ class MainActivity : ComponentActivity() {
                 else -> isSystemInDarkTheme()
             }
 
-            val configuration = LocalConfiguration.current
-            val screenWidthDp = configuration.screenWidthDp.toFloat()
-            val currentDensity = LocalDensity.current
-
-            // Responsive Viewport Density Scaling:
-            // Scaled so targetWidth fills the device screen width proportionally
-            val scaleFactor = (screenWidthDp / targetWidth).coerceIn(0.75f, 1.45f)
-            val customDensity = Density(
-                density = currentDensity.density * scaleFactor,
-                fontScale = currentDensity.fontScale * scaleFactor
-            )
+            val windowSizeClass = rememberWindowSizeClass()
 
             MyApplicationTheme(darkTheme = isDark, colorTheme = activeColorTheme) {
-                CompositionLocalProvider(LocalDensity provides customDensity) {
+                CompositionLocalProvider(LocalWindowSizeClass provides windowSizeClass) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background),
-                        contentAlignment = Alignment.TopCenter
+                            .background(MaterialTheme.colorScheme.background)
                     ) {
-                        Box(
-                            modifier = if (screenWidthDp > 600f) {
-                                Modifier.fillMaxHeight().width(targetWidth.dp)
-                            } else {
-                                Modifier.fillMaxSize()
-                            }
-                        ) {
-                            MainApp(viewModel = viewModel)
-                        }
+                        MainApp(viewModel = viewModel)
                     }
                 }
             }
@@ -268,6 +252,8 @@ fun MainApp(viewModel: MainViewModel) {
     val lastCompletedTx by viewModel.lastCompletedTx.collectAsState()
     val notes by viewModel.notes.collectAsState()
     val bankAccounts by viewModel.bankAccounts.collectAsState()
+    val customers by viewModel.customers.collectAsState()
+    val customersWithStats by viewModel.customersWithStats.collectAsState()
     val showDonationDialog by viewModel.showDonationDialog.collectAsState()
     val hasEditedStoreProfile by viewModel.hasEditedStoreProfile.collectAsState()
     var isShowingOpeningScreen by rememberSaveable { mutableStateOf(true) }
@@ -286,6 +272,7 @@ fun MainApp(viewModel: MainViewModel) {
     }
 
     var isShowingNotes by remember { mutableStateOf(false) }
+    var isShowingCustomers by rememberSaveable { mutableStateOf(false) }
     var isShowingGuide by rememberSaveable { mutableStateOf(false) }
     var isShowingAbout by rememberSaveable { mutableStateOf(false) }
     var debtForPaymentScreen by remember { mutableStateOf<DebtEntity?>(null) }
@@ -372,6 +359,10 @@ fun MainApp(viewModel: MainViewModel) {
         isShowingAbout = false
     }
 
+    BackHandler(enabled = isShowingCustomers) {
+        isShowingCustomers = false
+    }
+
     // Notification listener for Snackbar
     LaunchedEffect(Unit) {
         viewModel.userMessage.collectLatest { msg ->
@@ -386,6 +377,19 @@ fun MainApp(viewModel: MainViewModel) {
     } else if (isShowingAbout) {
         AboutScreen(
             onNavigateBack = { isShowingAbout = false }
+        )
+    } else if (isShowingCustomers) {
+        CustomerListScreen(
+            customersWithStats = customersWithStats,
+            allTransactions = transactions,
+            allDebts = debts,
+            allChangeRecords = changeRecords,
+            onAddCustomer = { customer -> viewModel.addCustomer(customer) },
+            onUpdateCustomer = { customer -> viewModel.updateCustomer(customer) },
+            onDeleteCustomer = { customerId -> viewModel.deleteCustomer(customerId) },
+            onSettleDebt = { debt -> debtForPaymentScreen = debt },
+            onMarkChangeAsPaid = { changeId -> viewModel.markChangeAsPaid(changeId) },
+            onNavigateBack = { isShowingCustomers = false }
         )
     } else if (isShowingSettings) {
         val context = LocalContext.current
@@ -519,10 +523,15 @@ fun MainApp(viewModel: MainViewModel) {
             qrisImagePath = qrisImagePath,
             qrisMerchantName = qrisMerchantName,
             bankAccounts = bankAccounts,
-            onConfirmSale = { method, cash, customerName, customerPhone, debtNote, isChangePending, buyerNameForChange, changeNote ->
+            customers = customers,
+            onAddNewCustomer = { newCust, onDone ->
+                viewModel.addCustomer(newCust, onDone)
+            },
+            onConfirmSale = { method, cash, customerName, customerPhone, debtNote, isChangePending, buyerNameForChange, changeNote, customerId ->
                 viewModel.processSale(
                     method, cash, customerName, customerPhone, debtNote,
-                    isChangePending, buyerNameForChange, changeNote
+                    isChangePending, buyerNameForChange, changeNote,
+                    customerId = customerId
                 ) { completedTx ->
                     isShowingPaymentScreen = false
                     if (method == "Bayar Nanti") {
@@ -588,86 +597,92 @@ fun MainApp(viewModel: MainViewModel) {
                 color = MaterialTheme.colorScheme.background,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = KelolaSpacing.ScreenMargin, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .widthIn(max = 1040.dp)
+                            .statusBarsPadding()
+                            .padding(horizontal = KelolaSpacing.ScreenMargin, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (isShowingDebts) {
-                            IconButton(
-                                onClick = { isShowingDebts = false },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                                    .testTag("button_back_from_debts")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Kembali",
-                                    tint = PrimaryBlue,
-                                    modifier = Modifier.size(20.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            if (isShowingDebts) {
+                                IconButton(
+                                    onClick = { isShowingDebts = false },
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .testTag("button_back_from_debts")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Kembali",
+                                        tint = PrimaryBlue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "Daftar Kasbon",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "Orang Belum Bayar / Hutang",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            } else {
+                                KelolaLogoBadge(
+                                    size = 36.dp,
+                                    iconSize = 20.dp
                                 )
-                            }
-                            Column {
-                                Text(
-                                    text = "Daftar Kasbon",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Orang Belum Bayar / Hutang",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        } else {
-                            KelolaLogoBadge(
-                                size = 36.dp,
-                                iconSize = 20.dp
-                            )
-                            Column {
-                                Text(
-                                    text = if (currentScreen == Screen.Home) (businessName.ifEmpty { "Kelola" }) else currentScreen.title,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = if (currentScreen == Screen.Home) "Aplikasi Kasir Usaha" else businessName.ifEmpty { "Kelola" },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Column {
+                                    Text(
+                                        text = if (currentScreen == Screen.Home) (businessName.ifEmpty { "Kelola" }) else currentScreen.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = if (currentScreen == Screen.Home) "Aplikasi Kasir Usaha" else businessName.ifEmpty { "Kelola" },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
-                    }
 
-                    // Settings Button (Round button with border matching preview)
-                    IconButton(
-                        onClick = { isShowingSettings = true },
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), CircleShape)
-                            .testTag("button_open_settings")
-                    ) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Pengaturan",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        // Settings Button (Round button with border matching preview)
+                        IconButton(
+                            onClick = { isShowingSettings = true },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f), CircleShape)
+                                .testTag("button_open_settings")
+                        ) {
+                            Icon(
+                                Icons.Default.Settings,
+                                contentDescription = "Pengaturan",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -678,11 +693,18 @@ fun MainApp(viewModel: MainViewModel) {
                 tonalElevation = 0.dp,
                 modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(0.dp))
             ) {
-                NavigationBar(
-                    containerColor = Color.Transparent,
-                    tonalElevation = 0.dp,
-                    modifier = Modifier.height(64.dp)
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
+                    NavigationBar(
+                        containerColor = Color.Transparent,
+                        tonalElevation = 0.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .widthIn(max = 840.dp)
+                            .height(64.dp)
+                    ) {
                     screens.forEachIndexed { index, screen ->
                         val isSelected = !isShowingDebts && selectedScreenIndex == index
                         NavigationBarItem(
@@ -745,6 +767,7 @@ fun MainApp(viewModel: MainViewModel) {
                     }
                 }
             }
+        }
         },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
@@ -815,6 +838,9 @@ fun MainApp(viewModel: MainViewModel) {
                                 },
                                 onOpenNotes = {
                                     isShowingNotes = true
+                                },
+                                onOpenCustomers = {
+                                    isShowingCustomers = true
                                 },
                                 onEditDebtItems = { debt ->
                                     coroutineScope.launch {
@@ -941,7 +967,7 @@ fun MainApp(viewModel: MainViewModel) {
             qrisImagePath = qrisImagePath,
             qrisMerchantName = qrisMerchantName,
             bankAccounts = bankAccounts,
-            onConfirmSale = { method, cash, customerName, customerPhone, debtNote, isChangePending, buyerNameForChange, changeNote ->
+            onConfirmSale = { method, cash, customerName, customerPhone, debtNote, isChangePending, buyerNameForChange, changeNote, customerId ->
                 viewModel.processSale(
                     method,
                     cash,
@@ -950,7 +976,8 @@ fun MainApp(viewModel: MainViewModel) {
                     debtNote,
                     isChangePending,
                     buyerNameForChange,
-                    changeNote
+                    changeNote,
+                    customerId = customerId
                 ) { completedTx ->
                     coroutineScope.launch {
                         paymentSheetState.hide()

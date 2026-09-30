@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import com.example.ui.theme.AdaptiveContainer
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -160,44 +162,46 @@ fun PromoScreen(
             )
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if (isCreatingOrEditing) {
-                CreateEditPromoScreenContent(
-                    promoToEdit = promoToEdit,
-                    products = products,
-                    onSave = { promo ->
-                        onSavePromo(promo)
-                        isCreatingOrEditing = false
-                        promoToEdit = null
-                    },
-                    onCancel = {
-                        isCreatingOrEditing = false
-                        promoToEdit = null
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                PromoListScreenContent(
-                    promos = promos,
-                    products = products,
-                    onAddNew = {
-                        promoToEdit = null
-                        isCreatingOrEditing = true
-                    },
-                    onEditPromo = { promo ->
-                        promoToEdit = promo
-                        isCreatingOrEditing = true
-                    },
-                    onToggleActive = onTogglePromoActive,
-                    onDeleteRequest = { promo ->
-                        promoToDelete = promo
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
+        AdaptiveContainer(maxWidth = 960.dp) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                if (isCreatingOrEditing) {
+                    CreateEditPromoScreenContent(
+                        promoToEdit = promoToEdit,
+                        products = products,
+                        onSave = { promo ->
+                            onSavePromo(promo)
+                            isCreatingOrEditing = false
+                            promoToEdit = null
+                        },
+                        onCancel = {
+                            isCreatingOrEditing = false
+                            promoToEdit = null
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    PromoListScreenContent(
+                        promos = promos,
+                        products = products,
+                        onAddNew = {
+                            promoToEdit = null
+                            isCreatingOrEditing = true
+                        },
+                        onEditPromo = { promo ->
+                            promoToEdit = promo
+                            isCreatingOrEditing = true
+                        },
+                        onToggleActive = onTogglePromoActive,
+                        onDeleteRequest = { promo ->
+                            promoToDelete = promo
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }
@@ -263,76 +267,82 @@ private fun PromoScreenTopBar(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = KelolaSpacing.ScreenMargin, vertical = KelolaSpacing.Space3),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 960.dp)
+                    .statusBarsPadding()
+                    .padding(horizontal = KelolaSpacing.ScreenMargin, vertical = KelolaSpacing.Space3),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .size(KelolaSpacing.MinTouchTarget)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .testTag("button_back_promo_screen")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Kembali",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        letterSpacing = (-0.3).sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 0.3.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-
-            if (!isEditing) {
-                Surface(
-                    onClick = onOpenCreate,
-                    shape = KelolaRadius.ShapeSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .testTag("button_open_create_promo")
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(KelolaSpacing.MinTouchTarget)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .testTag("button_back_promo_screen")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Tambah Promo",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
                         )
+                    }
+
+                    Column {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            letterSpacing = (-0.3).sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.3.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                if (!isEditing) {
+                    Surface(
+                        onClick = onOpenCreate,
+                        shape = KelolaRadius.ShapeSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("button_open_create_promo")
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Tambah Promo",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }

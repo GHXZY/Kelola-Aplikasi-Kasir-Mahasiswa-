@@ -59,34 +59,38 @@ export const ProductsScreen: React.FC<ProductsScreenProps> = ({
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F9FF] relative">
       {/* Top Header */}
       <div className="p-4 pb-2 space-y-3 bg-white border-b border-slate-200/80 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-bold text-slate-800 leading-tight">Manajemen Produk</h1>
-            <p className="text-xs text-slate-500 font-medium">Total {products.length} barang terdaftar</p>
+        <div className="max-w-6xl mx-auto space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-base font-bold text-slate-800 leading-tight">Manajemen Produk</h1>
+              <p className="text-xs text-slate-500 font-medium">Total {products.length} barang terdaftar</p>
+            </div>
           </div>
-        </div>
 
-        {/* Search & Category Filter */}
-        <SearchField
-          query={searchQuery}
-          onQueryChange={setSearchQuery}
-          placeholder="Cari nama barang atau kategori..."
-        />
-        <CategoryChipGroup
-          categories={categoryNames}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-        />
+          {/* Search & Category Filter */}
+          <SearchField
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+            placeholder="Cari nama barang atau kategori..."
+          />
+          <CategoryChipGroup
+            categories={categoryNames}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+        </div>
       </div>
 
       {/* Product List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2.5 pb-20">
-        {filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-card p-8 text-center border border-slate-200 text-slate-400 text-sm">
-            Tidak ada produk yang cocok dengan filter saat ini.
-          </div>
-        ) : (
-          filteredProducts.map((p) => {
+      <div className="flex-1 overflow-y-auto p-4 pb-24 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          {filteredProducts.length === 0 ? (
+            <div className="bg-white rounded-card p-8 text-center border border-slate-200 text-slate-400 text-sm">
+              Tidak ada produk yang cocok dengan filter saat ini.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 space-y-0">
+              {filteredProducts.map((p) => {
             const catName = categoryMap.get(p.categoryId) || 'Umum';
             const initials = p.name.slice(0, 2).toUpperCase();
 
@@ -162,9 +166,11 @@ export const ProductsScreen: React.FC<ProductsScreenProps> = ({
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+    </div>
+  </div>
 
       {/* Delete Confirmation */}
       {productToDelete && (

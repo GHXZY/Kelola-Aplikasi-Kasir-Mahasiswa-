@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, Plus, Trash2, Tag, Percent, ShoppingBag, X, AlertCircle } from 'lucide-react';
 import { PromoEntity, ProductEntity, PromoRequirement } from '../types';
 import { formatRupiah } from '../utils/format';
@@ -100,41 +100,45 @@ export const PromoScreen: React.FC<PromoScreenProps> = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F9FF] relative">
       {/* Top Bar */}
-      <div className="p-4 bg-white border-b border-slate-200/80 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onNavigateBack}
-            data-testid="button_back_promo"
-            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
-          >
-            <ArrowLeft className="w-5 h-5 text-brand-primary" />
-          </button>
-          <div>
-            <h1 className="text-base font-bold text-slate-800">Promo & Bundling</h1>
-            <p className="text-xs text-slate-500">Otomatis deteksi diskon kombinasi produk di kasir</p>
+      <div className="p-4 bg-white border-b border-slate-200/80 flex-shrink-0">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onNavigateBack}
+              data-testid="button_back_promo"
+              className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
+            >
+              <ArrowLeft className="w-5 h-5 text-brand-primary" />
+            </button>
+            <div>
+              <h1 className="text-base font-bold text-slate-800">Promo & Bundling</h1>
+              <p className="text-xs text-slate-500">Otomatis deteksi diskon kombinasi produk di kasir</p>
+            </div>
           </div>
-        </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          data-testid="button_create_promo"
-          className="h-9 px-3 rounded-input bg-brand-primary hover:bg-brand-deep text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Buat Promo</span>
-        </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            data-testid="button_create_promo"
+            className="h-9 px-3 rounded-input bg-brand-primary hover:bg-brand-deep text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Buat Promo</span>
+          </button>
+        </div>
       </div>
 
       {/* Promos List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-16">
-        {promos.length === 0 ? (
-          <div className="bg-white rounded-card p-8 text-center border border-slate-200 text-slate-400">
-            <Tag className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-            <p className="text-sm font-semibold text-slate-600">Belum Ada Promo Aktif</p>
-            <p className="text-xs text-slate-400 mt-1">Buat promo bundling paket hemat untuk meningkatkan penjualan kasir.</p>
-          </div>
-        ) : (
-          promos.map((promo) => {
+      <div className="flex-1 overflow-y-auto p-4 pb-20 md:p-6">
+        <div className="max-w-5xl mx-auto">
+          {promos.length === 0 ? (
+            <div className="bg-white rounded-card p-8 text-center border border-slate-200 text-slate-400">
+              <Tag className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+              <p className="text-sm font-semibold text-slate-600">Belum Ada Promo Aktif</p>
+              <p className="text-xs text-slate-400 mt-1">Buat promo bundling paket hemat untuk meningkatkan penjualan kasir.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 space-y-0">
+              {promos.map((promo) => {
             const reqs = parseRequirements(promo.requiredItemsJson);
             const promoTitle = promo.name || promo.title || 'Promo Bundling';
 
@@ -221,9 +225,11 @@ export const PromoScreen: React.FC<PromoScreenProps> = ({
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+    </div>
+  </div>
 
       {/* Create Promo Modal */}
       {showCreateModal && (

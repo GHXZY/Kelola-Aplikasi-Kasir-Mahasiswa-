@@ -3,6 +3,7 @@ package com.example.data.repository
 import com.example.data.local.dao.PosDao
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ChangeRecordEntity
+import com.example.data.local.entity.CustomerEntity
 import com.example.data.local.entity.DebtEntity
 import com.example.data.local.entity.ExpenseEntity
 import com.example.data.local.entity.IncomeEntity
@@ -20,6 +21,7 @@ import kotlinx.coroutines.withContext
 class PosRepository(private val posDao: PosDao) {
 
     // --- Flows ---
+    val allCustomers: Flow<List<CustomerEntity>> = posDao.getAllCustomers()
     val allCategories: Flow<List<CategoryEntity>> = posDao.getAllCategories()
     val activeProducts: Flow<List<ProductEntity>> = posDao.getActiveProducts()
     val allTransactions: Flow<List<TransactionEntity>> = posDao.getAllTransactions()
@@ -304,6 +306,43 @@ class PosRepository(private val posDao: PosDao) {
 
     suspend fun deleteNote(id: Long) = withContext(Dispatchers.IO) {
         posDao.deleteNote(id)
+    }
+
+    // --- Customers (Pelanggan) ---
+    suspend fun allCustomersSync(): List<CustomerEntity> = withContext(Dispatchers.IO) {
+        posDao.getAllCustomersSync()
+    }
+
+    suspend fun getCustomerById(id: Long): CustomerEntity? = withContext(Dispatchers.IO) {
+        posDao.getCustomerById(id)
+    }
+
+    suspend fun getCustomerByName(name: String): CustomerEntity? = withContext(Dispatchers.IO) {
+        posDao.getCustomerByName(name)
+    }
+
+    suspend fun insertCustomer(customer: CustomerEntity): Long = withContext(Dispatchers.IO) {
+        posDao.insertCustomer(customer)
+    }
+
+    suspend fun updateCustomer(customer: CustomerEntity) = withContext(Dispatchers.IO) {
+        posDao.updateCustomer(customer.copy(updatedAt = System.currentTimeMillis()))
+    }
+
+    suspend fun deleteCustomer(id: Long) = withContext(Dispatchers.IO) {
+        posDao.deleteCustomer(id)
+    }
+
+    fun getTransactionsByCustomerId(customerId: Long): Flow<List<TransactionEntity>> {
+        return posDao.getTransactionsByCustomerId(customerId)
+    }
+
+    fun getDebtsByCustomerId(customerId: Long): Flow<List<DebtEntity>> {
+        return posDao.getDebtsByCustomerId(customerId)
+    }
+
+    fun getChangeRecordsByCustomerId(customerId: Long): Flow<List<ChangeRecordEntity>> {
+        return posDao.getChangeRecordsByCustomerId(customerId)
     }
 
     suspend fun resetAllData() = withContext(Dispatchers.IO) {

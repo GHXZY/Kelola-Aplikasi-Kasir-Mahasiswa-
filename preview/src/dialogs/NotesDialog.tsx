@@ -91,7 +91,7 @@ export const NotesDialog: React.FC<NotesDialogProps> = ({
     <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-fadeIn">
       <div className="flex-1" onClick={onDismiss} />
 
-      <div className="bg-white rounded-t-sheet border-t border-slate-200 shadow-2xl flex flex-col max-h-[92vh] animate-slideUp">
+      <div className="bg-white rounded-t-sheet border-t border-slate-200 shadow-2xl flex flex-col max-h-[92vh] animate-slideUp w-full md:max-w-xl md:mx-auto md:rounded-card md:mb-6 md:border">
         {/* Header */}
         <div className="p-4 pb-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">

@@ -44,6 +44,7 @@ object KelolaRadius {
     val Md: Dp = 12.dp            // 0.75rem
     val Card: Dp = 12.dp          // 0.75rem - cards, containers
     val Hero: Dp = 12.dp          // 0.75rem
+    val Lg: Dp = 16.dp            // 1rem
     val Sheet: Dp = 16.dp         // 1rem (rounded-lg)
     val Xl: Dp = 24.dp            // 1.5rem
     val Full: Shape = CircleShape // 9999px
@@ -55,6 +56,7 @@ object KelolaRadius {
     val ShapeMedium = RoundedCornerShape(12.dp)
     val ShapeCard = RoundedCornerShape(12.dp)
     val ShapeHero = RoundedCornerShape(12.dp)
+    val ShapeLarge = RoundedCornerShape(16.dp)
     val ShapeSheet = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
     val ShapeXl = RoundedCornerShape(24.dp)
 }

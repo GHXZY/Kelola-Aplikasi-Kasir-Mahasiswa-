@@ -47,6 +47,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import com.example.ui.theme.AdaptiveContainer
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -269,67 +271,74 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 0.dp
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = KelolaSpacing.ScreenMargin, vertical = KelolaSpacing.Space3),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .widthIn(max = 760.dp)
+                            .statusBarsPadding()
+                            .padding(horizontal = KelolaSpacing.ScreenMargin, vertical = KelolaSpacing.Space3),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(
-                            onClick = onNavigateBack,
-                            modifier = Modifier
-                                .size(KelolaSpacing.MinTouchTarget)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .testTag("button_back_from_settings")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3)
                         ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Kembali ke Beranda",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(22.dp)
-                            )
+                            IconButton(
+                                onClick = onNavigateBack,
+                                modifier = Modifier
+                                    .size(KelolaSpacing.MinTouchTarget)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .testTag("button_back_from_settings")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Kembali ke Beranda",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+
+                            Column {
+                                Text(
+                                    text = "Pengaturan",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    letterSpacing = (-0.3).sp
+                                )
+                                Text(
+                                    text = "Kelola data usaha & preferensi kasir",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
                         }
 
-                        Column {
-                            Text(
-                                text = "Pengaturan",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                letterSpacing = (-0.3).sp
-                            )
-                            Text(
-                                text = "Kelola data usaha & preferensi kasir",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Medium,
-                                letterSpacing = 0.5.sp
-                            )
-                        }
+                        KelolaLogoBadge(
+                            size = 38.dp,
+                            iconSize = 22.dp
+                        )
                     }
-
-                    KelolaLogoBadge(
-                        size = 38.dp,
-                        iconSize = 22.dp
-                    )
                 }
             }
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = KelolaSpacing.ScreenMargin),
-            verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
-        ) {
+        AdaptiveContainer(maxWidth = 760.dp) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = KelolaSpacing.ScreenMargin),
+                verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space4)
+            ) {
             item {
                 Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
             }
@@ -1567,7 +1576,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Kelola • Versi 1.0 (Offline Local POS)",
+                        text = "Kelola • Versi 2.5 (Offline Local POS)",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1577,6 +1586,7 @@ fun SettingsScreen(
             item {
                 Spacer(modifier = Modifier.height(KelolaSpacing.Space6).navigationBarsPadding())
             }
+        }
         }
     }
 

@@ -77,11 +77,17 @@ Versi **2.5** menghadirkan pembaruan besar pada otomasi operasional kasir, integ
    - Diterapkan secara menyeluruh pada: Harga Modal & Jual Produk, Kuantitas Stok & Batas Menipis, Tambah & Kurangi Stok, Nominal Bayar Kasir Tunai, Pelunasan & Cicilan Kasbon, Modal Awal Toko, Potongan Diskon Nominal, dan Pencatatan Pengeluaran.
    - Menghilangkan risiko kesalahan ketik jumlah digit nol saat situasi antrean kasir sedang ramai.
 
-4. **🌟 Opening Screen Dinamis & Personalisasi Toko**
+4. **👥 Manajemen & List Pelanggan (Customer Tracking & Quick Profile)**
+   - **Shortcut Beranda**: Akses cepat langsung dari layar Beranda di bawah Catatan & Riwayat Toko untuk melihat pelanggan setia.
+   - **Pencarian & Filter Cerdas**: Temukan pelanggan secara instan lewat kolom pencarian nama serta filter praktis (*Semua*, *Ada Kasbon*, *Ada Kembalian*, dan *Urutkan Nama A-Z*).
+   - **Modal Profil Pelanggan Interaktif**: Menampilkan ringkasan statistik total transaksi belanja, akumulasi sisa kasbon belum lunas (dilengkapi tombol pelunasan langsung), akumulasi kembalian belum diserahkan (dilengkapi tombol *"Tandai Sudah Diberikan"*), serta riwayat transaksi terbaru.
+   - **Integrasi Kasir yang Fleksibel**: Kasir dapat memilih pelanggan tersimpan saat pembayaran, membuat pelanggan baru secara instan, atau tetap menggunakan catatan/nama manual tanpa paksaan membuat database pelanggan.
+
+5. **🌟 Opening Screen Dinamis & Personalisasi Toko**
    - Layar pembuka (*splash/opening screen*) adaptif saat pertama kali aplikasi dijalankan.
    - Secara *default* menampilkan identitas resmi aplikasi, namun begitu pemilik toko mengubah Nama Toko dan Alamat di menu Pengaturan, layar pembuka otomatis bertransformasi menampilkan nama usaha dan alamat toko pengguna.
 
-5. **🎨 Personalisasi Visual & Sistem Pembayaran Lengkap**
+6. **🎨 Personalisasi Visual & Sistem Pembayaran Lengkap**
    - 4 Pilihan tema warna utama: **Biru** (*Oceanic Modernity*), **Pink** (*Blush Blossom*), **Coklat** (*Terra & Flora*), dan **Orange** (*Solar Flare*) dengan dukungan penuh **Mode Terang** dan **Mode Gelap**.
    - Manajemen rekening bank transfer toko, metode pembayaran QRIS dengan fitur pemotong foto presisi 1:1, serta ekspor struk digital resmi berformat PDF.
 
@@ -95,6 +101,7 @@ Versi **2.5** menghadirkan pembaruan besar pada otomasi operasional kasir, integ
 | :--- | :---: | :--- | :--- |
 | **Kasir Cepat** | 🛒 | Keranjang belanja instan, tombol kuantitas responsif, input diskon, dan catatan pesanan | Transaksi selesai dalam hitungan detik saat jeda pergantian kelas |
 | **Scan & Generate Barcode** | 🏷️ | Pindai barcode via kamera & buat barcode EAN-13 otomatis untuk produk tanpa barcode | Input barang dan pencarian kasir super cepat tanpa ketik manual |
+| **List Pelanggan** | 👥 | Rekap pelanggan langganan, pelacak kasbon & kembalian per nama, serta profil riwayat | Kasir tidak perlu ketik ulang nama; pantau piutang & kembalian per pembeli |
 | **Pemisah Ribuan Otomatis** | 🔢 | Format titik ribuan *real-time* pada setiap pengisian nominal harga dan stok | Mencegah kekeliruan nominal nol saat jam sibuk transaksi |
 | **QRIS Smart Crop** | 📱 | Unggah gambar QRIS statis dengan alat pemotong presisi rasio 1:1 langsung di aplikasi | Pembeli dapat memindai kode QR dengan cepat tanpa perlu zoom |
 | **Kasbon & Piutang** | 🤝 | Catat nama teman, rincian barang, nominal hutang, kontak, dan status pelunasan | Modal jualan aman dari lupa; ada rekap sisa piutang di beranda |

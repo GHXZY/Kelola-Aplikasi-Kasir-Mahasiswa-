@@ -22,10 +22,13 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import com.example.ui.theme.AdaptiveContainer
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -36,10 +39,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.LocalAtm
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.QrCode
@@ -48,17 +53,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import com.example.data.local.entity.CustomerEntity
+import com.example.ui.customers.AddEditCustomerDialog
+import com.example.ui.customers.CustomerPickerDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -109,6 +120,8 @@ fun PaymentScreen(
     qrisImagePath: String = "",
     qrisMerchantName: String = "",
     bankAccounts: List<BankAccount> = emptyList(),
+    customers: List<CustomerEntity> = emptyList(),
+    onAddNewCustomer: (CustomerEntity, (CustomerEntity) -> Unit) -> Unit = { _, _ -> },
     onConfirmSale: (
         paymentMethod: String,
         amountPaid: Long,
@@ -117,7 +130,8 @@ fun PaymentScreen(
         debtNotes: String,
         isChangePending: Boolean,
         buyerNameForChange: String,
-        changeNote: String
+        changeNote: String,
+        customerId: Long?
     ) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -134,6 +148,13 @@ fun PaymentScreen(
     }
     val cashReceivedLong = FormatUtils.parseRupiahInput(cashReceivedInput)
     val change = (cashReceivedLong - totalAmount).coerceAtLeast(0L)
+
+    // State untuk Pelanggan (Customer selection & quick add)
+    var selectedCustomer by remember { mutableStateOf<CustomerEntity?>(null) }
+    var showCustomerPicker by remember { mutableStateOf(false) }
+    var showQuickAddCustomer by remember { mutableStateOf(false) }
+    var manualCustomerName by remember { mutableStateOf("") }
+    var saveAsNewCustomerChecked by remember { mutableStateOf(false) }
 
     // State untuk opsi Kembalian Belum Diberikan (Pending Change)
     var isChangePending by remember { mutableStateOf(false) }
@@ -178,10 +199,10 @@ fun PaymentScreen(
     val isFormValid = when (selectedMethod) {
         "Tunai" -> {
             val hasEnoughCash = cashReceivedLong >= totalAmount
-            val changeValid = !isChangePending || buyerNameForChange.isNotBlank()
+            val changeValid = !isChangePending || buyerNameForChange.isNotBlank() || selectedCustomer != null
             hasEnoughCash && changeValid
         }
-        "Bayar Nanti" -> debtorName.isNotBlank()
+        "Bayar Nanti" -> debtorName.isNotBlank() || selectedCustomer != null
         else -> true
     }
 
@@ -198,59 +219,70 @@ fun PaymentScreen(
             modifier = Modifier.fillMaxWidth(),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                IconButton(
-                    onClick = onNavigateBack,
+                Row(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .testTag("button_back_from_payment")
+                        .fillMaxWidth()
+                        .widthIn(max = 760.dp)
+                        .statusBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Kembali ke Kasir",
-                        tint = PrimaryBlue,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .testTag("button_back_from_payment")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali ke Kasir",
+                            tint = PrimaryBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                Column {
-                    Text(
-                        text = "Laman Pembayaran",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Selesaikan transaksi belanja pelanggan",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column {
+                        Text(
+                            text = "Laman Pembayaran",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Selesaikan transaksi belanja pelanggan",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
 
         // --- CONTENT BODY ---
-        Column(
+        AdaptiveContainer(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth(),
+            maxWidth = 760.dp
         ) {
-            // 1. Total Tagihan Banner Card
-            Card(
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 1. Total Tagihan Banner Card
+                Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .kelolaSoftShadow(KelolaRadius.ShapeCard, 2.dp),
@@ -294,6 +326,191 @@ fun PaymentScreen(
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
+                        }
+                    }
+                }
+            }
+
+            // Pelanggan (Opsional)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .kelolaSoftShadow(KelolaRadius.ShapeMedium, 1.dp),
+                shape = KelolaRadius.ShapeMedium,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Pelanggan (Opsional)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        if (selectedCustomer != null) {
+                            TextButton(
+                                onClick = {
+                                    selectedCustomer = null
+                                },
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("Lepas", color = DangerRed, fontSize = 12.sp)
+                            }
+                        }
+                    }
+
+                    if (selectedCustomer != null) {
+                        // Selected Customer Card
+                        Surface(
+                            shape = KelolaRadius.ShapeSmall,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text(
+                                                text = selectedCustomer!!.name.take(1).uppercase(),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onPrimary
+                                            )
+                                        }
+                                    }
+                                    Column {
+                                        Text(
+                                            text = selectedCustomer!!.name,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        if (selectedCustomer!!.phone.isNotBlank()) {
+                                            Text(
+                                                text = selectedCustomer!!.phone,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontSize = 11.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+
+                                OutlinedButton(
+                                    onClick = { showCustomerPicker = true },
+                                    shape = KelolaRadius.ShapeSmall,
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier.height(30.dp)
+                                ) {
+                                    Text("Ganti", fontSize = 11.sp)
+                                }
+                            }
+                        }
+                    } else {
+                        // Action buttons to pick from list or add new
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { showCustomerPicker = true },
+                                shape = KelolaRadius.ShapeInput,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(38.dp)
+                                    .testTag("button_pick_customer_payment")
+                            ) {
+                                Icon(Icons.Default.People, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Pilih Pelanggan", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            }
+
+                            Button(
+                                onClick = { showQuickAddCustomer = true },
+                                shape = KelolaRadius.ShapeInput,
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .height(38.dp)
+                                    .testTag("button_add_customer_payment")
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Tambah", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+
+                        // Manual Customer name field (keeps 100% backward compatibility)
+                        OutlinedTextField(
+                            value = manualCustomerName,
+                            onValueChange = { manualCustomerName = it },
+                            label = { Text("Nama Pelanggan Manual (Opsional)") },
+                            placeholder = { Text("Ketik nama pembeli jika tidak memilih dari list") },
+                            singleLine = true,
+                            shape = KelolaRadius.ShapeInput,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(54.dp)
+                                .testTag("input_manual_customer_name")
+                        )
+
+                        if (manualCustomerName.isNotBlank()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { saveAsNewCustomerChecked = !saveAsNewCustomerChecked },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Checkbox(
+                                    checked = saveAsNewCustomerChecked,
+                                    onCheckedChange = { saveAsNewCustomerChecked = it }
+                                )
+                                Text(
+                                    text = "Simpan sebagai pelanggan baru",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                 }
@@ -989,16 +1206,65 @@ fun PaymentScreen(
                             "Tunai" -> cashReceivedLong
                             else -> totalAmount
                         }
-                        onConfirmSale(
-                            selectedMethod,
-                            amountPaid,
-                            debtorName,
-                            debtorPhone,
-                            debtorNote,
-                            isChangePending,
-                            buyerNameForChange,
-                            changeNote
-                        )
+
+                        val finalCustName = selectedCustomer?.name
+                            ?: manualCustomerName.trim().ifEmpty {
+                                if (selectedMethod == "Bayar Nanti") debtorName.trim()
+                                else if (isChangePending) buyerNameForChange.trim()
+                                else ""
+                            }
+                        val finalCustPhone = selectedCustomer?.phone
+                            ?: (if (selectedMethod == "Bayar Nanti") debtorPhone.trim() else "")
+                        val finalDebtorName = if (selectedMethod == "Bayar Nanti") {
+                            debtorName.trim().ifEmpty { finalCustName }
+                        } else debtorName.trim()
+                        val finalBuyerNameChange = if (isChangePending) {
+                            buyerNameForChange.trim().ifEmpty { finalCustName }
+                        } else buyerNameForChange.trim()
+
+                        if (selectedCustomer != null) {
+                            onConfirmSale(
+                                selectedMethod,
+                                amountPaid,
+                                finalCustName,
+                                finalCustPhone,
+                                debtorNote,
+                                isChangePending,
+                                finalBuyerNameChange,
+                                changeNote,
+                                selectedCustomer!!.id
+                            )
+                        } else if (saveAsNewCustomerChecked && finalCustName.isNotBlank()) {
+                            val newCustomer = CustomerEntity(
+                                name = finalCustName,
+                                phone = finalCustPhone
+                            )
+                            onAddNewCustomer(newCustomer) { saved ->
+                                onConfirmSale(
+                                    selectedMethod,
+                                    amountPaid,
+                                    saved.name,
+                                    saved.phone,
+                                    debtorNote,
+                                    isChangePending,
+                                    finalBuyerNameChange,
+                                    changeNote,
+                                    saved.id
+                                )
+                            }
+                        } else {
+                            onConfirmSale(
+                                selectedMethod,
+                                amountPaid,
+                                finalCustName,
+                                finalCustPhone,
+                                debtorNote,
+                                isChangePending,
+                                finalBuyerNameChange,
+                                changeNote,
+                                null
+                            )
+                        }
                     },
                     enabled = isFormValid,
                     shape = KelolaRadius.ShapeInput,
@@ -1032,5 +1298,50 @@ fun PaymentScreen(
                 }
             }
         }
+    }
+    }
+
+    if (showCustomerPicker) {
+        CustomerPickerDialog(
+            customers = customers,
+            selectedCustomer = selectedCustomer,
+            onSelectCustomer = { cust ->
+                selectedCustomer = cust
+                if (selectedMethod == "Bayar Nanti") {
+                    debtorName = cust.name
+                    if (cust.phone.isNotBlank()) debtorPhone = cust.phone
+                }
+                if (isChangePending) {
+                    buyerNameForChange = cust.name
+                }
+            },
+            onAddNewCustomer = {
+                showQuickAddCustomer = true
+            },
+            onClearSelection = {
+                selectedCustomer = null
+            },
+            onDismiss = { showCustomerPicker = false }
+        )
+    }
+
+    if (showQuickAddCustomer) {
+        AddEditCustomerDialog(
+            initialCustomer = null,
+            onSave = { newCust ->
+                onAddNewCustomer(newCust) { saved ->
+                    selectedCustomer = saved
+                    if (selectedMethod == "Bayar Nanti") {
+                        debtorName = saved.name
+                        if (saved.phone.isNotBlank()) debtorPhone = saved.phone
+                    }
+                    if (isChangePending) {
+                        buyerNameForChange = saved.name
+                    }
+                }
+                showQuickAddCustomer = false
+            },
+            onDismiss = { showQuickAddCustomer = false }
+        )
     }
 }

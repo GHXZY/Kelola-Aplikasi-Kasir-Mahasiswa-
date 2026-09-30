@@ -5,6 +5,22 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+@Entity(
+    tableName = "customers",
+    indices = [
+        Index(value = ["name"]),
+        Index(value = ["createdAt"])
+    ]
+)
+data class CustomerEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val phone: String = "",
+    val notes: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
+)
+
 @Entity(tableName = "categories")
 data class CategoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -39,7 +55,11 @@ data class ProductEntity(
 
 @Entity(
     tableName = "transactions",
-    indices = [Index(value = ["transactionNumber"], unique = true), Index(value = ["createdAt"])]
+    indices = [
+        Index(value = ["transactionNumber"], unique = true),
+        Index(value = ["createdAt"]),
+        Index(value = ["customerId"])
+    ]
 )
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -52,6 +72,7 @@ data class TransactionEntity(
     val total: Long,
     val paymentMethod: String = "Tunai", // Tunai, QRIS, Transfer, E-Wallet, Bayar Nanti, Lainnya
     val customerName: String = "",
+    val customerId: Long? = null, // Relasi ke pelanggan tersimpan (opsional/nullable)
     val cashReceived: Long = 0,
     val change: Long = 0,
     val status: String = "COMPLETED", // COMPLETED, CANCELLED, UNPAID
@@ -132,7 +153,8 @@ data class StockMovementEntity(
         Index(value = ["customerName"]),
         Index(value = ["status"]),
         Index(value = ["transactionId"]),
-        Index(value = ["createdAt"])
+        Index(value = ["createdAt"]),
+        Index(value = ["customerId"])
     ]
 )
 data class DebtEntity(
@@ -141,6 +163,7 @@ data class DebtEntity(
     val transactionNumber: String = "",
     val customerName: String,
     val customerPhone: String = "",
+    val customerId: Long? = null, // Relasi ke pelanggan tersimpan (opsional/nullable)
     val amount: Long,              // Total hutang awal
     val remainingAmount: Long,     // Sisa hutang belum dibayar
     val status: String = "UNPAID", // UNPAID, PARTIALLY_PAID, PAID
@@ -157,7 +180,8 @@ data class DebtEntity(
         Index(value = ["status"]),
         Index(value = ["buyerName"]),
         Index(value = ["transactionId"]),
-        Index(value = ["createdAt"])
+        Index(value = ["createdAt"]),
+        Index(value = ["customerId"])
     ]
 )
 data class ChangeRecordEntity(
@@ -165,6 +189,7 @@ data class ChangeRecordEntity(
     val transactionId: Long? = null,
     val transactionNumber: String = "",
     val buyerName: String,
+    val customerId: Long? = null, // Relasi ke pelanggan tersimpan (opsional/nullable)
     val amount: Long,
     val status: String = "PENDING", // PENDING, PAID
     val note: String = "",

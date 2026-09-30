@@ -1115,7 +1115,7 @@ fun SettingsDialog(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Kelola • Versi 1.0 (Offline Local POS)",
+                            text = "Kelola • Versi 2.5 (Offline Local POS)",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

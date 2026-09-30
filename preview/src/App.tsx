@@ -10,7 +10,8 @@ import {
   INITIAL_SETTINGS,
   INITIAL_CHANGE_RECORDS,
   INITIAL_LOSS_RECORDS,
-  INITIAL_NOTES
+  INITIAL_NOTES,
+  INITIAL_CUSTOMERS
 } from './data/mockData';
 import {
   ProductEntity,
@@ -25,7 +26,9 @@ import {
   CartSummary,
   ChangeRecordEntity,
   LossRecordEntity,
-  NoteEntity
+  NoteEntity,
+  CustomerEntity,
+  CustomerWithStats
 } from './types';
 import { DeviceFrame } from './components/DeviceFrame';
 import { BottomNavBar, TabScreen } from './components/BottomNavBar';
@@ -39,6 +42,7 @@ import { PromoScreen } from './screens/PromoScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { AddEditProductScreen } from './screens/AddEditProductScreen';
 import { PaymentScreen } from './screens/PaymentScreen';
+import { CustomerListScreen } from './screens/CustomerListScreen';
 
 // Dialogs
 import { CartSheet } from './dialogs/CartSheet';
@@ -50,6 +54,7 @@ import { EditDebtItemsDialog } from './dialogs/EditDebtItemsDialog';
 import { AddExpenseDialog } from './dialogs/AddExpenseDialog';
 import { NotesDialog } from './dialogs/NotesDialog';
 import { RestockDialog, ReduceStockDialog, AddCategoryDialog } from './dialogs/ProductModals';
+import { CustomerProfileDialog, AddEditCustomerDialog } from './dialogs/CustomerDialogs';
 import { evaluatePromos } from './utils/promoEngine';
 
 export const App: React.FC = () => {
@@ -67,6 +72,13 @@ export const App: React.FC = () => {
   const [changeRecords, setChangeRecords] = useState<ChangeRecordEntity[]>(INITIAL_CHANGE_RECORDS);
   const [lossRecords, setLossRecords] = useState<LossRecordEntity[]>(INITIAL_LOSS_RECORDS);
   const [notes, setNotes] = useState<NoteEntity[]>(INITIAL_NOTES);
+
+  // Customer Management States
+  const [customers, setCustomers] = useState<CustomerEntity[]>(INITIAL_CUSTOMERS);
+  const [isShowingCustomers, setIsShowingCustomers] = useState(false);
+  const [selectedCustomerForProfile, setSelectedCustomerForProfile] = useState<CustomerWithStats | null>(null);
+  const [customerToEdit, setCustomerToEdit] = useState<CustomerEntity | null>(null);
+  const [showAddEditCustomerModal, setShowAddEditCustomerModal] = useState(false);
 
   // Cart State
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -207,13 +219,50 @@ export const App: React.FC = () => {
     showToast('Keranjang belanja dikosongkan');
   };
 
+  // Compute Customer Stats
+  const customersWithStats: CustomerWithStats[] = useMemo(() => {
+    return customers.map((c) => {
+      const customerDebts = debts.filter((d) => d.customerId === c.id && d.status !== 'PAID');
+      const totalUnpaid = customerDebts.reduce((sum, d) => sum + d.remainingAmount, 0);
+
+      const customerChanges = changeRecords.filter((ch) => ch.customerId === c.id && ch.status === 'PENDING');
+      const totalPendingChange = customerChanges.reduce((sum, ch) => sum + ch.amount, 0);
+
+      const totalPurchases = transactions.filter((t) => t.customerId === c.id && t.status === 'COMPLETED').length;
+
+      return {
+        customer: c,
+        totalPurchases,
+        totalUnpaid,
+        totalPendingChange
+      };
+    });
+  }, [customers, debts, changeRecords, transactions]);
+
+  const handleSaveCustomer = (custData: CustomerEntity) => {
+    const existing = customers.find((c) => c.id === custData.id);
+    if (existing) {
+      setCustomers((prev) => prev.map((c) => (c.id === custData.id ? custData : c)));
+      showToast(`Data pelanggan "${custData.name}" diperbarui`);
+    } else {
+      setCustomers((prev) => [custData, ...prev]);
+      showToast(`Pelanggan "${custData.name}" berhasil ditambahkan!`);
+    }
+  };
+
+  const handleDeleteCustomer = (customerId: number) => {
+    setCustomers((prev) => prev.filter((c) => c.id !== customerId));
+    showToast('Data pelanggan dihapus');
+  };
+
   // Transaction & Payment Completion
   const handleCompletePayment = (
     paymentMethod: string,
     cashReceived: number,
     debtCustomerName?: string,
     debtPhone?: string,
-    changePending?: { buyerName: string; note: string }
+    changePending?: { buyerName: string; note: string },
+    customerId?: number | null
   ) => {
     const now = Date.now();
     const trxNumber = `TRX-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(
@@ -229,6 +278,8 @@ export const App: React.FC = () => {
       cashReceived,
       change: Math.max(0, cashReceived - cart.total),
       paymentMethod,
+      customerId: customerId || null,
+      customerName: debtCustomerName || changePending?.buyerName || undefined,
       status: 'COMPLETED',
       createdAt: now
     };
@@ -258,6 +309,7 @@ export const App: React.FC = () => {
       const newDebt: DebtEntity = {
         id: Date.now(),
         transactionNumber: trxNumber,
+        customerId: customerId || null,
         customerName: debtCustomerName,
         customerPhone: debtPhone || '',
         amount: cart.total,
@@ -276,6 +328,7 @@ export const App: React.FC = () => {
         id: Date.now() + 10,
         transactionId: newTx.id,
         transactionNumber: trxNumber,
+        customerId: customerId || null,
         buyerName: changePending.buyerName,
         amount: newTx.change,
         status: 'PENDING',
@@ -491,7 +544,9 @@ export const App: React.FC = () => {
     isShowingAddEditProduct ||
     isShowingDebts ||
     isShowingPendingChanges ||
-    isShowingPromo;
+    isShowingPromo ||
+    isShowingCustomers ||
+    isShowingPaymentScreen;
 
   const handleNavigateBack = () => {
     if (isShowingSettings) setIsShowingSettings(false);
@@ -501,6 +556,8 @@ export const App: React.FC = () => {
     } else if (isShowingDebts) setIsShowingDebts(false);
     else if (isShowingPendingChanges) setIsShowingPendingChanges(false);
     else if (isShowingPromo) setIsShowingPromo(false);
+    else if (isShowingCustomers) setIsShowingCustomers(false);
+    else if (isShowingPaymentScreen) setIsShowingPaymentScreen(false);
   };
 
   return (
@@ -578,14 +635,26 @@ export const App: React.FC = () => {
             onDeletePromo={handleDeletePromo}
             onNavigateBack={() => setIsShowingPromo(false)}
           />
+        ) : isShowingCustomers ? (
+          <CustomerListScreen
+            customersWithStats={customersWithStats}
+            onSelectCustomer={(cws) => setSelectedCustomerForProfile(cws)}
+            onAddNewCustomer={() => {
+              setCustomerToEdit(null);
+              setShowAddEditCustomerModal(true);
+            }}
+            onNavigateBack={() => setIsShowingCustomers(false)}
+          />
         ) : isShowingPaymentScreen ? (
           <PaymentScreen
             cart={cart}
             settings={settings}
-            onCompletePayment={(method, cash, debtName, debtPhone, changePending) => {
-              handleCompletePayment(method, cash, debtName, debtPhone, changePending);
+            customers={customers}
+            onCompletePayment={(method, cash, debtName, debtPhone, changePending, custId) => {
+              handleCompletePayment(method, cash, debtName, debtPhone, changePending, custId);
               setIsShowingPaymentScreen(false);
             }}
+            onSaveNewCustomer={handleSaveCustomer}
             onNavigateBack={() => setIsShowingPaymentScreen(false)}
           />
         ) : (
@@ -604,6 +673,7 @@ export const App: React.FC = () => {
                 onOpenDebts={() => setIsShowingDebts(true)}
                 onOpenPendingChanges={() => setIsShowingPendingChanges(true)}
                 onOpenNotes={() => setShowNotesDialog(true)}
+                onOpenCustomers={() => setIsShowingCustomers(true)}
                 onOpenCashier={() => setActiveTab('cashier')}
                 onSelectTransaction={(tx) => setSelectedTxForDetail(tx)}
                 onRestockProduct={(prod) => setProductToRestock(prod)}
@@ -623,6 +693,7 @@ export const App: React.FC = () => {
                 onRemoveFromCart={handleRemoveFromCart}
                 onClearCart={handleClearCart}
                 onOpenCart={() => setShowCartSheet(true)}
+                onProceedToPayment={() => setIsShowingPaymentScreen(true)}
               />
             )}
 
@@ -809,6 +880,49 @@ export const App: React.FC = () => {
           onSaveNote={handleSaveNote}
           onDeleteNote={handleDeleteNote}
           onDismiss={() => setShowNotesDialog(false)}
+        />
+      )}
+
+      {/* Customer Profile Dialog */}
+      {selectedCustomerForProfile && (
+        <CustomerProfileDialog
+          customerWithStats={selectedCustomerForProfile}
+          debts={debts}
+          changeRecords={changeRecords}
+          transactions={transactions}
+          onEditCustomer={(cust) => {
+            setSelectedCustomerForProfile(null);
+            setCustomerToEdit(cust);
+            setShowAddEditCustomerModal(true);
+          }}
+          onDeleteCustomer={(id) => {
+            handleDeleteCustomer(id);
+            setSelectedCustomerForProfile(null);
+          }}
+          onSettleDebt={(d) => {
+            setSelectedCustomerForProfile(null);
+            setDebtToSettle(d);
+          }}
+          onMarkChangeGiven={(recordId) => {
+            handleMarkChangeGiven(recordId);
+          }}
+          onSelectTransaction={(tx) => {
+            setSelectedCustomerForProfile(null);
+            setSelectedTxForDetail(tx);
+          }}
+          onDismiss={() => setSelectedCustomerForProfile(null)}
+        />
+      )}
+
+      {/* Add / Edit Customer Dialog */}
+      {showAddEditCustomerModal && (
+        <AddEditCustomerDialog
+          customerToEdit={customerToEdit}
+          onSaveCustomer={handleSaveCustomer}
+          onDismiss={() => {
+            setShowAddEditCustomerModal(false);
+            setCustomerToEdit(null);
+          }}
         />
       )}
     </DeviceFrame>

@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ChangeRecordEntity
+import com.example.data.local.entity.CustomerEntity
 import com.example.data.local.entity.DebtEntity
 import com.example.data.local.entity.ExpenseEntity
 import com.example.data.local.entity.IncomeEntity
@@ -206,7 +207,8 @@ interface PosDao {
             insertDebt(
                 debt.copy(
                     transactionId = txId,
-                    transactionNumber = transaction.transactionNumber
+                    transactionNumber = transaction.transactionNumber,
+                    customerId = debt.customerId ?: transaction.customerId
                 )
             )
         } else {
@@ -227,7 +229,8 @@ interface PosDao {
             insertChangeRecord(
                 changeRecord.copy(
                     transactionId = txId,
-                    transactionNumber = transaction.transactionNumber
+                    transactionNumber = transaction.transactionNumber,
+                    customerId = changeRecord.customerId ?: transaction.customerId
                 )
             )
         }
@@ -732,6 +735,40 @@ interface PosDao {
     @Query("DELETE FROM notes")
     suspend fun clearNotes()
 
+    // --- CUSTOMERS (PELANGGAN) ---
+    @Query("SELECT * FROM customers ORDER BY name COLLATE NOCASE ASC")
+    fun getAllCustomers(): Flow<List<CustomerEntity>>
+
+    @Query("SELECT * FROM customers ORDER BY name COLLATE NOCASE ASC")
+    suspend fun getAllCustomersSync(): List<CustomerEntity>
+
+    @Query("SELECT * FROM customers WHERE id = :id LIMIT 1")
+    suspend fun getCustomerById(id: Long): CustomerEntity?
+
+    @Query("SELECT * FROM customers WHERE name = :name LIMIT 1")
+    suspend fun getCustomerByName(name: String): CustomerEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCustomer(customer: CustomerEntity): Long
+
+    @Update
+    suspend fun updateCustomer(customer: CustomerEntity)
+
+    @Query("DELETE FROM customers WHERE id = :id")
+    suspend fun deleteCustomer(id: Long)
+
+    @Query("DELETE FROM customers")
+    suspend fun clearCustomers()
+
+    @Query("SELECT * FROM transactions WHERE customerId = :customerId ORDER BY createdAt DESC")
+    fun getTransactionsByCustomerId(customerId: Long): Flow<List<TransactionEntity>>
+
+    @Query("SELECT * FROM debts WHERE customerId = :customerId ORDER BY createdAt DESC")
+    fun getDebtsByCustomerId(customerId: Long): Flow<List<DebtEntity>>
+
+    @Query("SELECT * FROM change_records WHERE customerId = :customerId ORDER BY createdAt DESC")
+    fun getChangeRecordsByCustomerId(customerId: Long): Flow<List<ChangeRecordEntity>>
+
     @Transaction
     suspend fun resetAllDataAtomic() {
         clearTransactionItems()
@@ -746,5 +783,6 @@ interface PosDao {
         clearCategories()
         clearPromos()
         clearNotes()
+        clearCustomers()
     }
 }

@@ -18,7 +18,8 @@ import {
   Trash2,
   Crop,
   Smartphone,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Info
 } from 'lucide-react';
 import { BusinessSettings } from '../types';
 import { KelolaLogoBadge } from '../components/KelolaLogo';
@@ -85,32 +86,35 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F9FF]">
       {/* Top Bar */}
-      <div className="p-4 bg-white border-b border-slate-200/80 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onNavigateBack}
-            data-testid="button_back_from_settings"
-            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
-          >
-            <ArrowLeft className="w-5 h-5 text-brand-primary" />
-          </button>
-          <div>
-            <h1 className="text-base font-bold text-slate-800">Pengaturan</h1>
-            <p className="text-xs text-slate-500">Kelola data usaha & preferensi kasir</p>
+      <div className="p-4 bg-white border-b border-slate-200/80 flex-shrink-0">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onNavigateBack}
+              data-testid="button_back_from_settings"
+              className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
+            >
+              <ArrowLeft className="w-5 h-5 text-brand-primary" />
+            </button>
+            <div>
+              <h1 className="text-base font-bold text-slate-800">Pengaturan</h1>
+              <p className="text-xs text-slate-500">Kelola data usaha & preferensi kasir</p>
+            </div>
           </div>
-        </div>
 
-        <KelolaLogoBadge size={34} />
+          <KelolaLogoBadge size={34} />
+        </div>
       </div>
 
       {/* Settings Form Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
-        {savedSuccess && (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-input text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-            <Check className="w-4 h-4" />
-            <span>Pengaturan berhasil disimpan!</span>
-          </div>
-        )}
+      <div className="flex-1 overflow-y-auto p-4 pb-20 md:p-6">
+        <div className="max-w-3xl mx-auto space-y-4">
+          {savedSuccess && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-input text-xs font-semibold flex items-center gap-2 animate-fadeIn">
+              <Check className="w-4 h-4" />
+              <span>Pengaturan berhasil disimpan!</span>
+            </div>
+          )}
 
         {/* 1. Identitas Usaha */}
         <div className="bg-white rounded-card p-4 border border-slate-200 shadow-soft space-y-3">
@@ -445,9 +449,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               <RotateCcw className="w-4 h-4" />
               <span>Reset Database ke Bawaan</span>
             </button>
+
+            {/* Version Footer */}
+            <div className="pt-3 pb-1 flex items-center justify-center gap-1.5 text-slate-400 text-xs">
+              <Info className="w-3.5 h-3.5" />
+              <span>Kelola • Versi 2.5 (Offline Local POS)</span>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
       {/* Reset Confirmation */}
       {showResetConfirm && (

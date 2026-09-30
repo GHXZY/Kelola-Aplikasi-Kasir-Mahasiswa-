@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.data.local.dao.PosDao
+import com.example.data.local.entity.CustomerEntity
 import com.example.data.local.entity.CategoryEntity
 import com.example.data.local.entity.ChangeRecordEntity
 import com.example.data.local.entity.DebtEntity
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [
+        CustomerEntity::class,
         CategoryEntity::class,
         ProductEntity::class,
         TransactionEntity::class,
@@ -38,7 +40,7 @@ import kotlinx.coroutines.launch
         PromoEntity::class,
         NoteEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -121,6 +123,29 @@ abstract class AppDatabase : RoomDatabase() {
             db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_products_barcode` ON `products` (`barcode`)")
         }
 
+        private fun migrateV7ToV8(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `customers` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `phone` TEXT NOT NULL,
+                    `notes` TEXT NOT NULL,
+                    `createdAt` INTEGER NOT NULL,
+                    `updatedAt` INTEGER NOT NULL
+                )
+                """.trimIndent()
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_customers_name` ON `customers` (`name`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_customers_createdAt` ON `customers` (`createdAt`)")
+            safeAddColumn(db, "transactions", "customerId", "INTEGER DEFAULT NULL")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_customerId` ON `transactions` (`customerId`)")
+            safeAddColumn(db, "debts", "customerId", "INTEGER DEFAULT NULL")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_debts_customerId` ON `debts` (`customerId`)")
+            safeAddColumn(db, "change_records", "customerId", "INTEGER DEFAULT NULL")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_change_records_customerId` ON `change_records` (`customerId`)")
+        }
+
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {}
         }
@@ -143,6 +168,10 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) = migrateV6ToV7(db)
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) = migrateV7ToV8(db)
         }
 
         val MIGRATION_1_7 = object : Migration(1, 7) {
@@ -187,6 +216,23 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_6_8 = object : Migration(6, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                migrateV6ToV7(db)
+                migrateV7ToV8(db)
+            }
+        }
+
+        val MIGRATION_1_8 = object : Migration(1, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                migrateV3ToV4(db)
+                migrateV4ToV5(db)
+                migrateV5ToV6(db)
+                migrateV6ToV7(db)
+                migrateV7ToV8(db)
+            }
+        }
+
         fun getDatabase(context: Context, scope: CoroutineScope): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -201,11 +247,14 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_4_5,
                         MIGRATION_5_6,
                         MIGRATION_6_7,
+                        MIGRATION_7_8,
                         MIGRATION_1_7,
                         MIGRATION_2_7,
                         MIGRATION_3_7,
                         MIGRATION_4_7,
-                        MIGRATION_5_7
+                        MIGRATION_5_7,
+                        MIGRATION_6_8,
+                        MIGRATION_1_8
                     )
                     .addCallback(DatabaseCallback(scope))
                     .build()

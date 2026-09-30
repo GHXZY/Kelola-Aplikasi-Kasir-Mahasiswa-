@@ -220,68 +220,71 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F9FF]">
       {/* Top Header Period Filter */}
       <div className="p-4 pb-2 bg-white border-b border-slate-200/80 flex-shrink-0 space-y-3">
-        <div>
-          <h1 className="text-base font-bold text-slate-800 leading-tight">Laporan Keuangan</h1>
-          <p className="text-xs text-slate-500">Ringkasan transaksi, omset, dan arus kas usaha</p>
-        </div>
+        <div className="max-w-6xl mx-auto space-y-3">
+          <div>
+            <h1 className="text-base font-bold text-slate-800 leading-tight">Laporan Keuangan</h1>
+            <p className="text-xs text-slate-500">Ringkasan transaksi, omset, dan arus kas usaha</p>
+          </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-          {periods.map((p) => {
-            const isSelected = selectedPeriod === p;
-            return (
-              <button
-                key={p}
-                onClick={() => setSelectedPeriod(p)}
-                className={`h-9 px-3.5 rounded-chip text-xs font-medium whitespace-nowrap transition-all border ${
-                  isSelected
-                    ? 'bg-brand-primary border-brand-primary text-white font-semibold shadow-xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                {p}
-              </button>
-            );
-          })}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+            {periods.map((p) => {
+              const isSelected = selectedPeriod === p;
+              return (
+                <button
+                  key={p}
+                  onClick={() => setSelectedPeriod(p)}
+                  className={`h-9 px-3.5 rounded-chip text-xs font-medium whitespace-nowrap transition-all border ${
+                    isSelected
+                      ? 'bg-brand-primary border-brand-primary text-white font-semibold shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
-        {/* Metric Summary Cards Grid */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <SummaryCard
-            title="Penjualan"
-            value={formatRupiah(totalSales)}
-            subtitle={`${completedTx.length} transaksi`}
-            icon={TrendingUp}
-            iconColorClass="text-brand-primary"
-            iconBgClass="bg-brand-sky/20"
-          />
-          <SummaryCard
-            title="Keuntungan (Kotor)"
-            value={formatRupiah(grossProfit)}
-            subtitle="Estimasi laba bersih"
-            icon={Coins}
-            iconColorClass="text-emerald-600"
-            iconBgClass="bg-emerald-50"
-          />
-          <SummaryCard
-            title="Pengeluaran"
-            value={formatRupiah(totalExpense)}
-            subtitle="Beban operasional"
-            icon={TrendingDown}
-            iconColorClass="text-danger"
-            iconBgClass="bg-danger-container"
-          />
-          <SummaryCard
-            title="Arus Kas Bersih"
-            value={formatRupiah(netCashflow)}
-            subtitle="Omset - Pengeluaran"
-            icon={Receipt}
-            iconColorClass="text-teal"
-            iconBgClass="bg-teal-container"
-          />
-        </div>
+      <div className="flex-1 overflow-y-auto p-4 pb-20 md:p-6">
+        <div className="max-w-6xl mx-auto space-y-4">
+          {/* Metric Summary Cards Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <SummaryCard
+              title="Penjualan"
+              value={formatRupiah(totalSales)}
+              subtitle={`${completedTx.length} transaksi`}
+              icon={TrendingUp}
+              iconColorClass="text-brand-primary"
+              iconBgClass="bg-brand-sky/20"
+            />
+            <SummaryCard
+              title="Keuntungan (Kotor)"
+              value={formatRupiah(grossProfit)}
+              subtitle="Estimasi laba bersih"
+              icon={Coins}
+              iconColorClass="text-emerald-600"
+              iconBgClass="bg-emerald-50"
+            />
+            <SummaryCard
+              title="Pengeluaran"
+              value={formatRupiah(totalExpense)}
+              subtitle="Beban operasional"
+              icon={TrendingDown}
+              iconColorClass="text-danger"
+              iconBgClass="bg-danger-container"
+            />
+            <SummaryCard
+              title="Arus Kas Bersih"
+              value={formatRupiah(netCashflow)}
+              subtitle="Omset - Pengeluaran"
+              icon={Receipt}
+              iconColorClass="text-teal"
+              iconBgClass="bg-teal-container"
+            />
+          </div>
 
         {/* Navigation Subtabs (Ringkasan, Riwayat, Arus Kas, Kerugian) */}
         <div className="bg-slate-200/70 p-1 rounded-input flex items-center gap-1 text-xs font-semibold">
@@ -307,52 +310,55 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
 
         {/* TAB 0: Ringkasan & Grafik */}
         {activeTab === 0 && (
-          <div className="space-y-4">
-            {/* Daily Sales Bar Chart */}
-            <div className="bg-white rounded-card p-4 border border-slate-200 shadow-soft">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-800">Tren Penjualan Mingguan</h3>
-                  <p className="text-[11px] text-slate-400">Total omset 7 hari terakhir</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 space-y-0">
+            {/* Left Column: Bar Chart & Modal Awal */}
+            <div className="space-y-4">
+              {/* Daily Sales Bar Chart */}
+              <div className="bg-white rounded-card p-4 border border-slate-200 shadow-soft">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Tren Penjualan Mingguan</h3>
+                    <p className="text-[11px] text-slate-400">Total omset 7 hari terakhir</p>
+                  </div>
+                  <BarChart3 className="w-5 h-5 text-brand-primary" />
                 </div>
-                <BarChart3 className="w-5 h-5 text-brand-primary" />
+
+                <div className="h-32 flex items-end justify-between gap-2 pt-4">
+                  {dailySales.map((item, idx) => {
+                    const heightPercent = Math.max(12, Math.round((item.amount / maxDayAmount) * 100));
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {item.amount >= 1000 ? `${Math.round(item.amount / 1000)}k` : item.amount}
+                        </span>
+                        <div
+                          style={{ height: `${heightPercent}%` }}
+                          className={`w-full rounded-t-md transition-all ${
+                            idx === dailySales.length - 1
+                              ? 'bg-gradient-to-t from-brand-deep to-brand-primary'
+                              : 'bg-brand-sky/60 hover:bg-brand-sky'
+                          }`}
+                        />
+                        <span className="text-[11px] font-semibold text-slate-600">{item.day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="h-32 flex items-end justify-between gap-2 pt-4">
-                {dailySales.map((item, idx) => {
-                  const heightPercent = Math.max(12, Math.round((item.amount / maxDayAmount) * 100));
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {item.amount >= 1000 ? `${Math.round(item.amount / 1000)}k` : item.amount}
-                      </span>
-                      <div
-                        style={{ height: `${heightPercent}%` }}
-                        className={`w-full rounded-t-md transition-all ${
-                          idx === dailySales.length - 1
-                            ? 'bg-gradient-to-t from-brand-deep to-brand-primary'
-                            : 'bg-brand-sky/60 hover:bg-brand-sky'
-                        }`}
-                      />
-                      <span className="text-[11px] font-semibold text-slate-600">{item.day}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Modal Awal Info Card */}
+              {openingCapital > 0 && (
+                <div className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-semibold text-slate-700">Modal Awal Kasir Hari Ini</div>
+                    <div className="text-[11px] text-slate-400">Uang kembalian awal di laci</div>
+                  </div>
+                  <div className="text-sm font-bold text-teal">{formatRupiah(openingCapital)}</div>
+                </div>
+              )}
             </div>
 
-            {/* Modal Awal Info Card */}
-            {openingCapital > 0 && (
-              <div className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-slate-700">Modal Awal Kasir Hari Ini</div>
-                  <div className="text-[11px] text-slate-400">Uang kembalian awal di laci</div>
-                </div>
-                <div className="text-sm font-bold text-teal">{formatRupiah(openingCapital)}</div>
-              </div>
-            )}
-
-            {/* Produk Terlaris Leaderboard Card */}
+            {/* Right Column: Produk Terlaris Leaderboard Card */}
             <div className="bg-white rounded-card p-4 border border-slate-200 shadow-soft space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -425,38 +431,40 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
                 Tidak ada transaksi yang cocok.
               </div>
             ) : (
-              filteredTx.map((tx) => (
-                <div
-                  key={tx.id}
-                  onClick={() => onSelectTransaction(tx)}
-                  className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between hover:border-brand-sky cursor-pointer transition-all active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-bold text-slate-800">{tx.transactionNumber}</span>
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          tx.status === 'COMPLETED'
-                            ? 'bg-success-container text-success-text'
-                            : 'bg-danger-container text-danger-text'
-                        }`}
-                      >
-                        {tx.status === 'COMPLETED' ? 'Selesai' : 'Batal'}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 space-y-0">
+                {filteredTx.map((tx) => (
+                  <div
+                    key={tx.id}
+                    onClick={() => onSelectTransaction(tx)}
+                    className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between hover:border-brand-sky cursor-pointer transition-all active:scale-[0.99]"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-bold text-slate-800">{tx.transactionNumber}</span>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            tx.status === 'COMPLETED'
+                              ? 'bg-success-container text-success-text'
+                              : 'bg-danger-container text-danger-text'
+                          }`}
+                        >
+                          {tx.status === 'COMPLETED' ? 'Selesai' : 'Batal'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-1">
+                        {formatDateTime(tx.createdAt)} • {tx.paymentMethod}
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-brand-primary">{formatRupiah(tx.total)}</div>
+                      <span className="text-[11px] text-brand-primary font-medium hover:underline">
+                        Detail struk →
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-1">
-                      {formatDateTime(tx.createdAt)} • {tx.paymentMethod}
-                    </div>
                   </div>
-
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-brand-primary">{formatRupiah(tx.total)}</div>
-                    <span className="text-[11px] text-brand-primary font-medium hover:underline">
-                      Detail struk →
-                    </span>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -473,95 +481,97 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
                 Belum ada catatan mutasi kas.
               </div>
             ) : (
-              cashflowTimeline.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        item.isIncome ? 'bg-success-container text-success-text' : 'bg-danger-container text-danger-text'
-                      }`}
-                    >
-                      {item.isIncome ? (
-                        <ArrowUp className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <ArrowDown className="w-4 h-4 text-red-600" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="text-[13px] font-semibold text-slate-800">{item.title}</div>
-                      <div className="text-[11px] text-slate-500 truncate max-w-[180px]">{item.subtitle}</div>
-                      <div className="text-[10px] text-slate-400">{formatDateTime(item.date)}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 relative">
-                    <span
-                      className={`text-[13px] font-bold ${
-                        item.isIncome ? 'text-emerald-600' : 'text-danger'
-                      }`}
-                    >
-                      {item.isIncome ? `+${formatRupiah(item.amount)}` : `-${formatRupiah(item.amount)}`}
-                    </span>
-
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuId(openMenuId === item.id ? null : item.id);
-                        }}
-                        data-testid={`button_menu_cashflow_${item.id}`}
-                        className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
-                        title="Opsi data arus kas"
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 space-y-0">
+                {cashflowTimeline.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          item.isIncome ? 'bg-success-container text-success-text' : 'bg-danger-container text-danger-text'
+                        }`}
                       >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                        {item.isIncome ? (
+                          <ArrowUp className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <ArrowDown className="w-4 h-4 text-red-600" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-semibold text-slate-800">{item.title}</div>
+                        <div className="text-[11px] text-slate-500 truncate max-w-[180px]">{item.subtitle}</div>
+                        <div className="text-[10px] text-slate-400">{formatDateTime(item.date)}</div>
+                      </div>
+                    </div>
 
-                      {openMenuId === item.id && (
-                        <div
-                          className="absolute right-0 top-9 z-40 bg-white rounded-lg shadow-lg border border-slate-200 py-1 w-32 animate-fadeIn text-left"
-                          onClick={(e) => e.stopPropagation()}
+                    <div className="flex items-center gap-2 relative">
+                      <span
+                        className={`text-[13px] font-bold ${
+                          item.isIncome ? 'text-emerald-600' : 'text-danger'
+                        }`}
+                      >
+                        {item.isIncome ? `+${formatRupiah(item.amount)}` : `-${formatRupiah(item.amount)}`}
+                      </span>
+
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(openMenuId === item.id ? null : item.id);
+                          }}
+                          data-testid={`button_menu_cashflow_${item.id}`}
+                          className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
+                          title="Opsi data arus kas"
                         >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              if (item.rawExpense) {
-                                onEditExpense?.(item.rawExpense);
-                              } else if (item.rawTx) {
-                                onSelectTransaction(item.rawTx);
-                              }
-                            }}
-                            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 text-left cursor-pointer"
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {openMenuId === item.id && (
+                          <div
+                            className="absolute right-0 top-9 z-40 bg-white rounded-lg shadow-lg border border-slate-200 py-1 w-32 animate-fadeIn text-left"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <Edit2 className="w-3.5 h-3.5 text-brand-primary" />
-                            <span>Edit Data</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              setConfirmDeleteTarget({
-                                id: item.rawExpense?.id || item.rawTx?.id || item.id,
-                                isExpense: !item.isIncome,
-                                title: item.title,
-                                amount: item.amount
-                              });
-                            }}
-                            className="w-full px-3 py-2 text-xs font-semibold text-danger hover:bg-red-50 flex items-center gap-2 text-left cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-danger" />
-                            <span>Hapus Data</span>
-                          </button>
-                        </div>
-                      )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                if (item.rawExpense) {
+                                  onEditExpense?.(item.rawExpense);
+                                } else if (item.rawTx) {
+                                  onSelectTransaction(item.rawTx);
+                                }
+                              }}
+                              className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 text-left cursor-pointer"
+                            >
+                              <Edit2 className="w-3.5 h-3.5 text-brand-primary" />
+                              <span>Edit Data</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                setConfirmDeleteTarget({
+                                  id: item.rawExpense?.id || item.rawTx?.id || item.id,
+                                  isExpense: !item.isIncome,
+                                  title: item.title,
+                                  amount: item.amount
+                                });
+                              }}
+                              className="w-full px-3 py-2 text-xs font-semibold text-danger hover:bg-red-50 flex items-center gap-2 text-left cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-danger" />
+                              <span>Hapus Data</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -599,39 +609,42 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
             ) : (
               <div className="space-y-2.5">
                 <div className="text-xs font-bold text-slate-700">Rincian Barang Kadaluarsa & Kerugian:</div>
-                {lossRecords.map((r) => (
-                  <div
-                    key={r.id}
-                    className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-800">{r.productName}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">
-                          {r.reason || 'Kadaluarsa'}
-                        </span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 space-y-0">
+                  {lossRecords.map((r) => (
+                    <div
+                      key={r.id}
+                      className="bg-white rounded-card p-3.5 border border-slate-200 shadow-soft flex items-center justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-800">{r.productName}</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">
+                            {r.reason || 'Kadaluarsa'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          Jumlah: <b>{r.quantity} pcs</b> • HPP Modal: {formatRupiah(r.costPrice)}/pcs
+                        </div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                          <Calendar className="w-3 h-3" />
+                          <span>{formatDateTime(r.date || r.createdAt)}</span>
+                        </div>
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        Jumlah: <b>{r.quantity} pcs</b> • HPP Modal: {formatRupiah(r.costPrice)}/pcs
-                      </div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                        <Calendar className="w-3 h-3" />
-                        <span>{formatDateTime(r.date || r.createdAt)}</span>
-                      </div>
-                    </div>
 
-                    <div className="text-right">
-                      <span className="text-[13px] font-bold text-red-600 block">
-                        -{formatRupiah(r.totalLoss)}
-                      </span>
-                      <span className="text-[10px] text-slate-400">Kerugian HPP</span>
+                      <div className="text-right">
+                        <span className="text-[13px] font-bold text-red-600 block">
+                          -{formatRupiah(r.totalLoss)}
+                        </span>
+                        <span className="text-[10px] text-slate-400">Kerugian HPP</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Confirmation Dialog for Delete Cashflow Item */}

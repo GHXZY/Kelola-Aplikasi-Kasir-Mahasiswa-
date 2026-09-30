@@ -64,76 +64,80 @@ export const DebtsScreen: React.FC<DebtsScreenProps> = ({
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F9FF]">
       {/* Top Header */}
       <div className="p-4 pb-2 bg-white border-b border-slate-200/80 flex-shrink-0 space-y-3">
-        <div className="flex items-center gap-3">
-          {onNavigateBack && (
-            <button
-              onClick={onNavigateBack}
-              className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
-            >
-              <ArrowLeft className="w-5 h-5 text-brand-primary" />
-            </button>
-          )}
-          <div>
-            <h1 className="text-base font-bold text-slate-800 leading-tight">Daftar Kasbon</h1>
-            <p className="text-xs text-slate-500 font-medium">Kelola tagihan bayar nanti & pelunasan</p>
-          </div>
-        </div>
-
-        {/* Stats summary row */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <SummaryCard
-            title="Sisa Kasbon"
-            value={formatRupiah(totalUnpaid)}
-            subtitle={`${unpaidCount} orang belum lunas`}
-            icon={Hourglass}
-            iconColorClass="text-amber-600"
-            iconBgClass="bg-amber-100/60"
-          />
-          <SummaryCard
-            title="Total Dilunasi"
-            value={formatRupiah(totalPaid)}
-            subtitle="Sudah diterima"
-            icon={CheckCircle2}
-            iconColorClass="text-emerald-600"
-            iconBgClass="bg-emerald-100/60"
-          />
-        </div>
-
-        {/* Search & Filters */}
-        <SearchField
-          query={searchQuery}
-          onQueryChange={setSearchQuery}
-          placeholder="Cari nama atau no. transaksi..."
-        />
-
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-          {filterOptions.map((f) => {
-            const isSelected = selectedFilter === f;
-            return (
+        <div className="max-w-6xl mx-auto space-y-3">
+          <div className="flex items-center gap-3">
+            {onNavigateBack && (
               <button
-                key={f}
-                onClick={() => setSelectedFilter(f)}
-                className={`h-9 px-3.5 rounded-chip text-xs font-medium whitespace-nowrap transition-all border ${
-                  isSelected
-                    ? 'bg-brand-primary border-brand-primary text-white font-semibold shadow-xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
+                onClick={onNavigateBack}
+                className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-all"
               >
-                {f}
+                <ArrowLeft className="w-5 h-5 text-brand-primary" />
               </button>
-            );
-          })}
+            )}
+            <div>
+              <h1 className="text-base font-bold text-slate-800 leading-tight">Daftar Kasbon</h1>
+              <p className="text-xs text-slate-500 font-medium">Kelola tagihan bayar nanti & pelunasan</p>
+            </div>
+          </div>
+
+          {/* Stats summary row */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <SummaryCard
+              title="Sisa Kasbon"
+              value={formatRupiah(totalUnpaid)}
+              subtitle={`${unpaidCount} orang belum lunas`}
+              icon={Hourglass}
+              iconColorClass="text-amber-600"
+              iconBgClass="bg-amber-100/60"
+            />
+            <SummaryCard
+              title="Total Dilunasi"
+              value={formatRupiah(totalPaid)}
+              subtitle="Sudah diterima"
+              icon={CheckCircle2}
+              iconColorClass="text-emerald-600"
+              iconBgClass="bg-emerald-100/60"
+            />
+          </div>
+
+          {/* Search & Filters */}
+          <SearchField
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+            placeholder="Cari nama atau no. transaksi..."
+          />
+
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+            {filterOptions.map((f) => {
+              const isSelected = selectedFilter === f;
+              return (
+                <button
+                  key={f}
+                  onClick={() => setSelectedFilter(f)}
+                  className={`h-9 px-3.5 rounded-chip text-xs font-medium whitespace-nowrap transition-all border ${
+                    isSelected
+                      ? 'bg-brand-primary border-brand-primary text-white font-semibold shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {f}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Debt Cards List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
-        {filteredDebts.length === 0 ? (
-          <div className="bg-white rounded-card p-8 text-center border border-slate-200 text-slate-400 text-sm">
-            Tidak ada data kasbon yang sesuai.
-          </div>
-        ) : (
-          filteredDebts.map((debt) => {
+      <div className="flex-1 overflow-y-auto p-4 pb-20 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          {filteredDebts.length === 0 ? (
+            <div className="bg-white rounded-card p-8 text-center border border-slate-200 text-slate-400 text-sm">
+              Tidak ada data kasbon yang sesuai.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 space-y-0">
+              {filteredDebts.map((debt) => {
             const isPaid = debt.status === 'PAID';
             const isPartiallyPaid = debt.status === 'PARTIALLY_PAID';
             const paidAmount = debt.amount - debt.remainingAmount;
@@ -285,9 +289,11 @@ export const DebtsScreen: React.FC<DebtsScreenProps> = ({
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+    </div>
+  </div>
 
       {/* Delete Confirmation */}
       {debtToDelete && (

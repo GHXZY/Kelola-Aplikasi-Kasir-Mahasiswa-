@@ -9,7 +9,8 @@ import {
   BusinessSettings,
   ChangeRecordEntity,
   LossRecordEntity,
-  NoteEntity
+  NoteEntity,
+  CustomerEntity
 } from '../types';
 
 const NOW = Date.now();
@@ -182,6 +183,8 @@ export const INITIAL_TRANSACTIONS: TransactionEntity[] = [
     cashReceived: 50000,
     change: 15000,
     paymentMethod: 'Tunai',
+    customerId: 1,
+    customerName: 'Ahmad',
     status: 'COMPLETED',
     createdAt: NOW - 2 * ONE_HOUR
   },
@@ -194,6 +197,8 @@ export const INITIAL_TRANSACTIONS: TransactionEntity[] = [
     cashReceived: 45000,
     change: 0,
     paymentMethod: 'QRIS',
+    customerId: 2,
+    customerName: 'Budi Santoso',
     status: 'COMPLETED',
     createdAt: NOW - 45 * 60 * 1000
   },
@@ -206,6 +211,8 @@ export const INITIAL_TRANSACTIONS: TransactionEntity[] = [
     cashReceived: 20000,
     change: 0,
     paymentMethod: 'Tunai',
+    customerId: 1,
+    customerName: 'Ahmad',
     status: 'COMPLETED',
     createdAt: NOW - ONE_DAY - 3 * ONE_HOUR
   },
@@ -290,36 +297,39 @@ export const INITIAL_DEBTS: DebtEntity[] = [
   {
     id: 1,
     transactionNumber: 'TRX-20260913-002',
-    customerName: 'Pak Budi (Warga RT 03)',
-    customerPhone: '081298765432',
-    amount: 35000,
-    remainingAmount: 20000,
+    customerName: 'Ahmad',
+    customerPhone: '081234567890',
+    customerId: 1,
+    amount: 25000,
+    remainingAmount: 25000,
     dueDate: '2026-09-20',
-    note: 'Ambil mie & rokok, janji lunas hari Sabtu',
-    status: 'PARTIALLY_PAID',
+    note: 'Ambil kopi & makan siang',
+    status: 'UNPAID',
     createdAt: NOW - ONE_DAY - 5 * ONE_HOUR
   },
   {
     id: 2,
     transactionNumber: 'TRX-20260912-005',
-    customerName: 'Mas Dimas Kost No. 4',
-    customerPhone: '085712348899',
-    amount: 55000,
-    remainingAmount: 55000,
+    customerName: 'Siti Rahma',
+    customerPhone: '087890123456',
+    customerId: 3,
+    amount: 50000,
+    remainingAmount: 50000,
     dueDate: '2026-09-25',
-    note: 'Beras 5kg dan telur',
+    note: 'Beras & cemilan tugas kelompok',
     status: 'UNPAID',
     createdAt: NOW - 2 * ONE_DAY
   },
   {
     id: 3,
     transactionNumber: 'TRX-20260910-001',
-    customerName: 'Ibu Siti Warung Kopi',
-    customerPhone: '081377889900',
-    amount: 150000,
+    customerName: 'Budi Santoso',
+    customerPhone: '085712345678',
+    customerId: 2,
+    amount: 30000,
     remainingAmount: 0,
     dueDate: '2026-09-12',
-    note: 'Gula pasir & kopi sachet - sudah lunas',
+    note: 'Snack rapat kantin - lunas',
     status: 'PAID',
     createdAt: NOW - 4 * ONE_DAY
   }
@@ -363,11 +373,23 @@ export const INITIAL_CHANGE_RECORDS: ChangeRecordEntity[] = [
   {
     id: 1,
     transactionNumber: 'TRX-20260914-001',
-    buyerName: 'Mas Danang',
+    buyerName: 'Ahmad',
+    customerId: 1,
     amount: 5000,
     status: 'PENDING',
     note: 'Belum ada pecahan Rp 5.000',
     createdAt: NOW - 2 * ONE_HOUR,
+    paidAt: null
+  },
+  {
+    id: 2,
+    transactionNumber: 'TRX-20260914-002',
+    buyerName: 'Budi Santoso',
+    customerId: 2,
+    amount: 10000,
+    status: 'PENDING',
+    note: 'Kembalian tertunda pecahan 10k',
+    createdAt: NOW - ONE_HOUR,
     paidAt: null
   }
 ];
@@ -402,6 +424,33 @@ export const INITIAL_NOTES: NoteEntity[] = [
     category: 'Kembalian',
     createdAt: NOW - 2 * ONE_HOUR,
     updatedAt: NOW - 2 * ONE_HOUR
+  }
+];
+
+export const INITIAL_CUSTOMERS: CustomerEntity[] = [
+  {
+    id: 1,
+    name: 'Ahmad',
+    phone: '081234567890',
+    notes: 'Sering pesan Kopi Gula Aren pagi hari',
+    createdAt: NOW - 10 * ONE_DAY,
+    updatedAt: NOW - 10 * ONE_DAY
+  },
+  {
+    id: 2,
+    name: 'Budi Santoso',
+    phone: '085712345678',
+    notes: 'Kantin gedung B lantai 2',
+    createdAt: NOW - 7 * ONE_DAY,
+    updatedAt: NOW - 7 * ONE_DAY
+  },
+  {
+    id: 3,
+    name: 'Siti Rahma',
+    phone: '087890123456',
+    notes: 'Mahasiswa prodi Sistem Informasi',
+    createdAt: NOW - 5 * ONE_DAY,
+    updatedAt: NOW - 5 * ONE_DAY
   }
 ];
 

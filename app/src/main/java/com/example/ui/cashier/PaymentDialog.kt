@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -111,7 +112,8 @@ fun PaymentDialog(
         debtNotes: String,
         isChangePending: Boolean,
         buyerNameForChange: String,
-        changeNote: String
+        changeNote: String,
+        customerId: Long?
     ) -> Unit,
     onOpenDebtsScreen: () -> Unit,
     onDismiss: () -> Unit
@@ -176,13 +178,18 @@ fun PaymentDialog(
         containerColor = MaterialTheme.colorScheme.surface,
         shape = KelolaRadius.ShapeSheet
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 24.dp)
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
-            // Header
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 640.dp)
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 24.dp)
+            ) {
+                // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -734,7 +741,8 @@ fun PaymentDialog(
                             "",
                             isChangePending,
                             buyerNameForChange,
-                            changeNote
+                            changeNote,
+                            null
                         )
                     }
                 },
@@ -773,6 +781,7 @@ fun PaymentDialog(
                     }
                 }
             }
+        }
         }
     }
 
@@ -926,7 +935,7 @@ fun PaymentDialog(
                     onClick = {
                         if (debtorName.isNotBlank()) {
                             showDebtInputDialog = false
-                            onConfirmSale("Bayar Nanti", 0L, debtorName, debtorPhone, debtorNote, false, "", "")
+                            onConfirmSale("Bayar Nanti", 0L, debtorName, debtorPhone, debtorNote, false, "", "", null)
                         }
                     },
                     enabled = debtorName.isNotBlank(),

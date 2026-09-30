@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -60,6 +61,7 @@ fun TransactionSuccessDialog(
             onDismiss()
             onNewSale()
         },
+        modifier = Modifier.widthIn(max = 440.dp),
         shape = KelolaRadius.ShapeCard,
         containerColor = MaterialTheme.colorScheme.surface,
         title = null,
