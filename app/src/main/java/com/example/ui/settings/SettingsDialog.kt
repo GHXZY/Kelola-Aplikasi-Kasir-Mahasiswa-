@@ -124,8 +124,8 @@ fun SettingsDialog(
     var phoneInput by remember { mutableStateOf(currentPhone) }
     var receiptFooterInput by remember { mutableStateOf(currentReceiptFooter) }
 
-    var openingCapitalInput by remember { mutableStateOf(if (openingCapital > 0L) openingCapital.toString() else "") }
-    var previousSalesInput by remember { mutableStateOf(if (previousSales > 0L) previousSales.toString() else "") }
+    var openingCapitalInput by remember { mutableStateOf(if (openingCapital > 0L) FormatUtils.formatNumberWithDots(openingCapital) else "") }
+    var previousSalesInput by remember { mutableStateOf(if (previousSales > 0L) FormatUtils.formatNumberWithDots(previousSales) else "") }
     var previousSalesDateInput by remember { mutableStateOf(previousSalesDate) }
     var previousSalesNoteInput by remember { mutableStateOf(previousSalesNote) }
 
@@ -680,13 +680,11 @@ fun SettingsDialog(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
 
-                                    val parsedCapital = openingCapitalInput.toLongOrNull() ?: 0L
+                                    val parsedCapital = FormatUtils.parseRupiahInput(openingCapitalInput)
                                     OutlinedTextField(
                                         value = openingCapitalInput,
                                         onValueChange = { input ->
-                                            if (input.all { it.isDigit() }) {
-                                                openingCapitalInput = input
-                                            }
+                                            openingCapitalInput = FormatUtils.formatRupiahInput(input)
                                         },
                                         placeholder = { Text("0") },
                                         prefix = { Text("Rp ", fontWeight = FontWeight.Bold) },
@@ -752,13 +750,11 @@ fun SettingsDialog(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
 
-                                    val parsedSales = previousSalesInput.toLongOrNull() ?: 0L
+                                    val parsedSales = FormatUtils.parseRupiahInput(previousSalesInput)
                                     OutlinedTextField(
                                         value = previousSalesInput,
                                         onValueChange = { input ->
-                                            if (input.all { it.isDigit() }) {
-                                                previousSalesInput = input
-                                            }
+                                            previousSalesInput = FormatUtils.formatRupiahInput(input)
                                         },
                                         placeholder = { Text("0") },
                                         prefix = { Text("Rp ", fontWeight = FontWeight.Bold) },

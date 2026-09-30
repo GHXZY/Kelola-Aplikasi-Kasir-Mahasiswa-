@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
         PromoEntity::class,
         NoteEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -116,6 +116,11 @@ abstract class AppDatabase : RoomDatabase() {
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_notes_category` ON `notes` (`category`)")
         }
 
+        private fun migrateV6ToV7(db: SupportSQLiteDatabase) {
+            safeAddColumn(db, "products", "barcode", "TEXT DEFAULT NULL")
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_products_barcode` ON `products` (`barcode`)")
+        }
+
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {}
         }
@@ -136,34 +141,49 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) = migrateV5ToV6(db)
         }
 
-        val MIGRATION_1_6 = object : Migration(1, 6) {
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) = migrateV6ToV7(db)
+        }
+
+        val MIGRATION_1_7 = object : Migration(1, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 migrateV3ToV4(db)
                 migrateV4ToV5(db)
                 migrateV5ToV6(db)
+                migrateV6ToV7(db)
             }
         }
 
-        val MIGRATION_2_6 = object : Migration(2, 6) {
+        val MIGRATION_2_7 = object : Migration(2, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 migrateV3ToV4(db)
                 migrateV4ToV5(db)
                 migrateV5ToV6(db)
+                migrateV6ToV7(db)
             }
         }
 
-        val MIGRATION_3_6 = object : Migration(3, 6) {
+        val MIGRATION_3_7 = object : Migration(3, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 migrateV3ToV4(db)
                 migrateV4ToV5(db)
                 migrateV5ToV6(db)
+                migrateV6ToV7(db)
             }
         }
 
-        val MIGRATION_4_6 = object : Migration(4, 6) {
+        val MIGRATION_4_7 = object : Migration(4, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 migrateV4ToV5(db)
                 migrateV5ToV6(db)
+                migrateV6ToV7(db)
+            }
+        }
+
+        val MIGRATION_5_7 = object : Migration(5, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                migrateV5ToV6(db)
+                migrateV6ToV7(db)
             }
         }
 
@@ -180,10 +200,12 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_3_4,
                         MIGRATION_4_5,
                         MIGRATION_5_6,
-                        MIGRATION_1_6,
-                        MIGRATION_2_6,
-                        MIGRATION_3_6,
-                        MIGRATION_4_6
+                        MIGRATION_6_7,
+                        MIGRATION_1_7,
+                        MIGRATION_2_7,
+                        MIGRATION_3_7,
+                        MIGRATION_4_7,
+                        MIGRATION_5_7
                     )
                     .addCallback(DatabaseCallback(scope))
                     .build()

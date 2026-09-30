@@ -53,6 +53,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BrightnessMedium
 import androidx.compose.material.icons.filled.Check
@@ -60,8 +61,10 @@ import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocalAtm
 import androidx.compose.material.icons.filled.Payments
@@ -72,6 +75,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -165,6 +169,9 @@ fun SettingsScreen(
     onExportBackup: () -> Unit,
     onResetSettingsOnly: () -> Unit,
     onResetAllData: () -> Unit,
+    onPreviewOpeningScreen: () -> Unit = {},
+    onOpenGuide: () -> Unit = {},
+    onOpenAbout: () -> Unit = {},
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -173,8 +180,8 @@ fun SettingsScreen(
     var phoneInput by remember { mutableStateOf(currentPhone) }
     var receiptFooterInput by remember { mutableStateOf(currentReceiptFooter) }
 
-    var openingCapitalInput by remember { mutableStateOf(if (openingCapital > 0L) openingCapital.toString() else "") }
-    var previousSalesInput by remember { mutableStateOf(if (previousSales > 0L) previousSales.toString() else "") }
+    var openingCapitalInput by remember { mutableStateOf(if (openingCapital > 0L) FormatUtils.formatNumberWithDots(openingCapital) else "") }
+    var previousSalesInput by remember { mutableStateOf(if (previousSales > 0L) FormatUtils.formatNumberWithDots(previousSales) else "") }
     var previousSalesDateInput by remember { mutableStateOf(previousSalesDate) }
     var previousSalesNoteInput by remember { mutableStateOf(previousSalesNote) }
 
@@ -419,6 +426,19 @@ fun SettingsScreen(
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(KelolaSpacing.Space2))
                             Text("Simpan Identitas Usaha", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        }
+
+                        OutlinedButton(
+                            onClick = onPreviewOpeningScreen,
+                            shape = KelolaRadius.ShapeInput,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(44.dp)
+                                .testTag("button_preview_opening_screen")
+                        ) {
+                            Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(KelolaSpacing.Space2))
+                            Text("Lihat Layar Pembuka (Opening Screen)", fontSize = 13.sp, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
@@ -881,7 +901,7 @@ fun SettingsScreen(
 
                         OutlinedTextField(
                             value = openingCapitalInput,
-                            onValueChange = { openingCapitalInput = it.filter { c -> c.isDigit() } },
+                            onValueChange = { openingCapitalInput = FormatUtils.formatRupiahInput(it) },
                             label = { Text("Modal Kasir Awal Hari Ini") },
                             placeholder = { Text("0") },
                             prefix = { Text("Rp ", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface) },
@@ -896,7 +916,7 @@ fun SettingsScreen(
 
                         Button(
                             onClick = {
-                                val amount = openingCapitalInput.toLongOrNull() ?: 0L
+                                val amount = FormatUtils.parseRupiahInput(openingCapitalInput)
                                 onSaveOpeningCapital(amount)
                                 showSuccess("Modal awal kasir berhasil disimpan!")
                             },
@@ -1255,6 +1275,161 @@ fun SettingsScreen(
                                         )
                                     )
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // =============================================================
+            // 5c. BANTUAN & INFORMASI APLIKASI
+            // =============================================================
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .kelolaSoftShadow(shape = KelolaRadius.ShapeCard, elevation = 2.dp),
+                    shape = KelolaRadius.ShapeCard,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(KelolaSpacing.Space4),
+                        verticalArrangement = Arrangement.spacedBy(KelolaSpacing.Space3)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.HelpOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(KelolaSpacing.Space2))
+                            Text(
+                                text = "BANTUAN & INFORMASI",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                letterSpacing = 0.6.sp
+                            )
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+
+                        // Shortcut 1: Panduan Penggunaan
+                        Surface(
+                            shape = KelolaRadius.ShapeInput,
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onOpenGuide() }
+                                .testTag("shortcut_guide")
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.MenuBook,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    Column {
+                                        Text(
+                                            text = "Panduan",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "Petunjuk lengkap & mudah menggunakan seluruh fitur aplikasi",
+                                            fontSize = 11.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        // Shortcut 2: Tentang Aplikasi
+                        Surface(
+                            shape = KelolaRadius.ShapeInput,
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onOpenAbout() }
+                                .testTag("shortcut_about")
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    Column {
+                                        Text(
+                                            text = "Tentang Aplikasi",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "Pengembang, versi Kelola 2.5 & kebijakan privasi",
+                                            fontSize = 11.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
                         }
                     }

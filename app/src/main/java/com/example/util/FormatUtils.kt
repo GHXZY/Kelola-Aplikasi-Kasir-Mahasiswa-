@@ -13,7 +13,7 @@ object FormatUtils {
         groupingSeparator = '.'
         decimalSeparator = ','
     }
-    private val decimalFormat = DecimalFormat("#,###", rupiahSymbols)
+    private val decimalFormat = DecimalFormat("#,##0", rupiahSymbols)
 
     fun formatRupiah(amount: Long): String {
         return if (amount < 0) {

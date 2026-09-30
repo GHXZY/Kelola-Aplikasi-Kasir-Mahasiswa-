@@ -80,6 +80,12 @@ interface PosDao {
     @Query("SELECT * FROM products WHERE id = :id LIMIT 1")
     suspend fun getProductById(id: Long): ProductEntity?
 
+    @Query("SELECT * FROM products WHERE barcode = :barcode AND isDeleted = 0 LIMIT 1")
+    suspend fun getProductByBarcode(barcode: String): ProductEntity?
+
+    @Query("SELECT COUNT(*) FROM products WHERE barcode = :barcode AND isDeleted = 0 AND (:excludeProductId IS NULL OR id != :excludeProductId)")
+    suspend fun countProductsWithBarcode(barcode: String, excludeProductId: Long? = null): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProduct(product: ProductEntity): Long
 

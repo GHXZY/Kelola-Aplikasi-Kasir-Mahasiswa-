@@ -415,9 +415,7 @@ fun DebtPaymentScreen(
                                 OutlinedTextField(
                                     value = partialAmountInput,
                                     onValueChange = { input ->
-                                        val digitsOnly = input.filter { it.isDigit() }
-                                        val amount = digitsOnly.toLongOrNull() ?: 0L
-                                        partialAmountInput = if (amount > 0) FormatUtils.formatNumberWithDots(amount) else digitsOnly
+                                        partialAmountInput = FormatUtils.formatRupiahInput(input)
                                         cashReceivedInput = partialAmountInput
                                     },
                                     prefix = { Text("Rp ", fontWeight = FontWeight.Bold) },
@@ -687,9 +685,7 @@ fun DebtPaymentScreen(
                                 OutlinedTextField(
                                     value = cashReceivedInput,
                                     onValueChange = { input ->
-                                        val digitsOnly = input.filter { it.isDigit() }
-                                        val amount = digitsOnly.toLongOrNull() ?: 0L
-                                        cashReceivedInput = if (amount > 0) FormatUtils.formatNumberWithDots(amount) else digitsOnly
+                                        cashReceivedInput = FormatUtils.formatRupiahInput(input)
                                     },
                                     label = { Text("Uang Diterima dari Pelanggan") },
                                     prefix = { Text("Rp ", fontWeight = FontWeight.Bold) },

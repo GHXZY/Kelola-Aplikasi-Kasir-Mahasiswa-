@@ -91,9 +91,11 @@ import com.example.ui.cashier.CashierScreen
 import com.example.ui.cashier.PaymentDialog
 import com.example.ui.cashier.PaymentScreen
 import com.example.ui.cashier.TransactionSuccessDialog
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.example.ui.components.ConfirmationDialog
 import com.example.ui.components.DonationDialog
 import com.example.ui.components.KelolaLogoBadge
+import com.example.ui.components.OpeningScreen
 import com.example.ui.debts.DebtsScreen
 
 import androidx.compose.foundation.layout.width
@@ -117,6 +119,8 @@ import com.example.ui.promo.PromoScreen
 import com.example.ui.reports.AddExpenseDialog
 import com.example.ui.reports.ReportScreen
 import com.example.ui.reports.TransactionDetailDialog
+import com.example.ui.settings.AboutScreen
+import com.example.ui.settings.GuideScreen
 import com.example.ui.settings.SettingsDialog
 import com.example.ui.settings.SettingsScreen
 import com.example.ui.theme.BorderLight
@@ -265,6 +269,8 @@ fun MainApp(viewModel: MainViewModel) {
     val notes by viewModel.notes.collectAsState()
     val bankAccounts by viewModel.bankAccounts.collectAsState()
     val showDonationDialog by viewModel.showDonationDialog.collectAsState()
+    val hasEditedStoreProfile by viewModel.hasEditedStoreProfile.collectAsState()
+    var isShowingOpeningScreen by rememberSaveable { mutableStateOf(true) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -280,6 +286,8 @@ fun MainApp(viewModel: MainViewModel) {
     }
 
     var isShowingNotes by remember { mutableStateOf(false) }
+    var isShowingGuide by rememberSaveable { mutableStateOf(false) }
+    var isShowingAbout by rememberSaveable { mutableStateOf(false) }
     var debtForPaymentScreen by remember { mutableStateOf<DebtEntity?>(null) }
 
     // Dialog & Sheet States
@@ -352,6 +360,18 @@ fun MainApp(viewModel: MainViewModel) {
         debtForPaymentScreen = null
     }
 
+    BackHandler(enabled = isShowingOpeningScreen) {
+        isShowingOpeningScreen = false
+    }
+
+    BackHandler(enabled = isShowingGuide) {
+        isShowingGuide = false
+    }
+
+    BackHandler(enabled = isShowingAbout) {
+        isShowingAbout = false
+    }
+
     // Notification listener for Snackbar
     LaunchedEffect(Unit) {
         viewModel.userMessage.collectLatest { msg ->
@@ -359,7 +379,15 @@ fun MainApp(viewModel: MainViewModel) {
         }
     }
 
-    if (isShowingSettings) {
+    if (isShowingGuide) {
+        GuideScreen(
+            onNavigateBack = { isShowingGuide = false }
+        )
+    } else if (isShowingAbout) {
+        AboutScreen(
+            onNavigateBack = { isShowingAbout = false }
+        )
+    } else if (isShowingSettings) {
         val context = LocalContext.current
         SettingsScreen(
             currentBusinessName = businessName,
@@ -437,6 +465,15 @@ fun MainApp(viewModel: MainViewModel) {
                     // reset finished
                 }
             },
+            onPreviewOpeningScreen = {
+                isShowingOpeningScreen = true
+            },
+            onOpenGuide = {
+                isShowingGuide = true
+            },
+            onOpenAbout = {
+                isShowingAbout = true
+            },
             onNavigateBack = { isShowingSettings = false }
         )
 
@@ -499,9 +536,9 @@ fun MainApp(viewModel: MainViewModel) {
         AddEditProductScreen(
             initialProduct = productToEdit,
             categories = categories,
-            onSaveProduct = { name, catId, cost, sell, stock, minStock, unit, expDate ->
+            onSaveProduct = { name, catId, cost, sell, stock, minStock, unit, expDate, barcode ->
                 if (productToEdit == null) {
-                    viewModel.addProduct(name, catId, cost, sell, stock, minStock, unit, expDate)
+                    viewModel.addProduct(name, catId, cost, sell, stock, minStock, unit, expDate, barcode)
                 } else {
                     viewModel.updateProduct(
                         productToEdit!!.copy(
@@ -512,12 +549,25 @@ fun MainApp(viewModel: MainViewModel) {
                             stock = stock,
                             minimumStock = minStock,
                             unit = unit,
-                            expirationDate = expDate
+                            expirationDate = expDate,
+                            barcode = barcode
                         )
                     )
                 }
                 isShowingAddEditProduct = false
                 productToEdit = null
+            },
+            onGenerateUniqueBarcode = {
+                viewModel.generateUniqueBarcode(productToEdit?.id)
+            },
+            onCheckBarcodeAvailability = { candidate ->
+                viewModel.checkBarcodeAvailability(candidate, productToEdit?.id)
+            },
+            onLookupProduct = { barcode ->
+                viewModel.getProductByBarcode(barcode)
+            },
+            onSelectProductToEdit = { product ->
+                productToEdit = product
             },
             onAddCategoryCustom = { catName, onCreated ->
                 viewModel.addCategory(catName) { newId ->
@@ -1118,9 +1168,25 @@ fun MainApp(viewModel: MainViewModel) {
     }
 
     // 15. Donation / Support Dialog (Tampil pertama kali download & tiap 5 jam)
-    if (showDonationDialog) {
+    if (showDonationDialog && !isShowingOpeningScreen) {
         DonationDialog(
             onDismiss = { viewModel.dismissDonationDialog() }
+        )
+    }
+
+    // 16. Opening Screen (Layar Pembuka Aplikasi saat dibuka)
+    androidx.compose.animation.AnimatedVisibility(
+        visible = isShowingOpeningScreen,
+        enter = androidx.compose.animation.fadeIn(),
+        exit = androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
+    ) {
+        OpeningScreen(
+            storeName = businessName,
+            storeAddress = businessAddress,
+            hasCustomProfile = hasEditedStoreProfile,
+            onTimeoutOrDismiss = {
+                isShowingOpeningScreen = false
+            }
         )
     }
     }

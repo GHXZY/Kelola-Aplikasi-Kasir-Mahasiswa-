@@ -76,6 +76,14 @@ class PosRepository(private val posDao: PosDao) {
         id
     }
 
+    suspend fun getProductByBarcode(barcode: String): ProductEntity? = withContext(Dispatchers.IO) {
+        posDao.getProductByBarcode(barcode)
+    }
+
+    suspend fun isBarcodeUnique(barcode: String, excludeProductId: Long? = null): Boolean = withContext(Dispatchers.IO) {
+        posDao.countProductsWithBarcode(barcode, excludeProductId) == 0
+    }
+
     suspend fun updateProduct(product: ProductEntity) = withContext(Dispatchers.IO) {
         posDao.updateProduct(product.copy(updatedAt = System.currentTimeMillis()))
     }

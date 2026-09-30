@@ -2,12 +2,12 @@
 
   <img src="docs/assets/logo.png" alt="Logo Kelola" width="130" style="border-radius: 24px; box-shadow: 0 8px 24px rgba(0, 73, 116, 0.15);" />
 
-  # 💼 Kelola (Kasir & Keuangan Kampus)
+  # 💼 Kelola (Kasir & Keuangan Pelajar)
 
-  **Aplikasi Kasir Sederhana, Cepat, dan 100% Offline untuk Mahasiswa Pejuang Usaha di Kampus**
+  **Aplikasi Kasir Sederhana, Cepat, dan 100% Offline untuk Pelajar & Mahasiswa Pejuang Usaha**
 
   [![Android](https://img.shields.io/badge/Platform-Android_7.0+-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
-  [![Version](https://img.shields.io/badge/Versi_Terbaru-v1.6.0-006199?style=for-the-badge&logo=android&logoColor=white)](https://github.com/GHXZY/Kelola/releases/download/Kelola-Android-App/Kelola-release.apk)
+  [![Version](https://img.shields.io/badge/Versi_Terbaru-v2.5.0-006199?style=for-the-badge&logo=android&logoColor=white)](https://github.com/GHXZY/Kelola/releases/download/Kelola-Android-App/Kelola-release.apk)
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
   [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack_Compose_Material3-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
   [![Room Database](https://img.shields.io/badge/Database-Room_Local--First-FF6F00?style=for-the-badge&logo=sqlite&logoColor=white)](https://developer.android.com/training/data-storage/room)
@@ -17,7 +17,7 @@
 
   <p align="center">
     <a href="https://github.com/GHXZY/Kelola/releases/download/Kelola-Android-App/Kelola-release.apk">
-      <img src="https://img.shields.io/badge/⚡_Download_APK-v1.6.0_Release-00796B?style=for-the-badge&logo=android&logoColor=white" alt="Download APK Kelola" height="42" />
+      <img src="https://img.shields.io/badge/⚡_Download_APK-v2.5.0_Release-00796B?style=for-the-badge&logo=android&logoColor=white" alt="Download APK Kelola" height="42" />
     </a>
     &nbsp;&nbsp;
     <a href="https://github.com/GHXZY/Kelola/releases">
@@ -56,29 +56,34 @@ Banyak mahasiswa memulai usaha di lingkungan kampus—mulai dari berjualan makan
 
 ## 🚀 Pembaruan & Versi Terbaru
 
-### 📦 Versi 1.6.0 (Rilis Terbaru)
-[![Unduh APK v1.6.0](https://img.shields.io/badge/Download_APK-v1.6.0-006199?style=flat-square&logo=android&logoColor=white)](https://github.com/GHXZY/Kelola/releases/download/Kelola-Android-App/Kelola-release.apk)
-*Tanggal Rilis: September 2026 | Berkas: `Kelola-release.apk` (~16.7 MB)*
+### 📦 Versi 2.5 (Rilis Terbaru)
+[![Unduh APK v2.5.0](https://img.shields.io/badge/Download_APK-v2.5.0-006199?style=flat-square&logo=android&logoColor=white)](https://github.com/GHXZY/Kelola/releases/download/Kelola-Android-App/Kelola-release.apk)
+*Tanggal Rilis: September 2026 | Berkas: `Kelola-release.apk` (~40.6 MB)*
 
-Versi **1.6.0** menghadirkan pembaruan besar pada sistem kustomisasi visual, manajemen pembayaran kasir, pencetakan dan pembagian struk digital (PDF), hingga peningkatan kenyamanan antarmuka pengguna:
+Versi **2.5** menghadirkan pembaruan besar pada otomasi operasional kasir, integrasi barcode pintar (pemindaian kamera instan & pembuatan barcode mandiri), format otomatis pemisah ribuan, hingga personalisasi identitas toko:
 
-1. **🎨 4 Pilihan Tema Warna Lengkap (Personalisasi Seluruh Aplikasi)**
-   - Mendukung 4 palet warna utama: **Biru** (*Oceanic Modernity*), **Pink** (*Blush Blossom*), **Coklat** (*Terra & Flora*), dan **Orange** (*Solar Flare*).
-   - Setiap tema otomatis mengadaptasi seluruh halaman (Beranda, Kasir, Keranjang, Laporan, Grafik Arus Kas, Produk, Kasbon, Catatan, Promo, dan Pengaturan) baik dalam **Mode Terang (*Light*)** maupun **Mode Gelap (*Dark*)**.
-   - Dilengkapi kartu swatch warna interaktif dengan indikator centang pada menu Pengaturan.
+1. **📷 Pemindaian Barcode Kamera Instan (Katalog Produk & Kasir)**
+   - **Kasir Cepat**: Cukup arahkan kamera ke barcode fisik produk untuk mencari dan memasukkan item ke keranjang belanja kasir secara otomatis dalam sekejap.
+   - **Form Tambah & Edit Produk**: Pindai barcode kemasan produk secara langsung menggunakan kamera ponsel untuk mengisi kolom kode barcode secara otomatis tanpa perlu input manual.
+   - Dilengkapi panduan kotak bidik visual (*aiming reticle*), tombol lampu senter (*flashlight*), dan pemrosesan berkecepatan tinggi berbasis Google ML Kit yang bekerja 100% *offline*.
 
-2. **💳 Metode Pembayaran Default E-Wallet & Rekening Bank Toko**
-   - Fitur **Akun Rekening Bank Transfer**: Simpan hingga 5 rekening bank toko (Nama Bank, Nomor Rekening, dan Atas Nama) agar kasir dapat memperlihatkan atau menyalin detail rekening saat pelanggan memilih metode Transfer.
-   - Header akun rekening bank didesain ringkas dan rapi dalam satu baris horizontal.
+2. **🏷️ Generator Barcode Otomatis (EAN-13 Mandiri)**
+   - Solusi khusus untuk produk kantin, koperasi, atau buatan sendiri yang belum memiliki barcode dari pabrik.
+   - Mengenerate nomor barcode standar EAN-13 unik berawalan kode lokal `200` dengan perhitungan *checksum* modulo-10 yang valid.
+   - Dilengkapi pratinjau barcode beresolusi tinggi, tombol salin kode cepat, dan kemampuan mengunduh gambar barcode (PNG) ke galeri ponsel untuk dicetak pada stiker kemasan produk.
 
-3. **📄 Ekspor & Pembagian Struk Transaksi Digital (PDF)**
-   - Menghasilkan struk resmi berformat PDF beresolusi tinggi langsung dari aplikasi secara *offline*.
-   - Memuat detail identitas toko, rincian barang belanjaan, diskon/promo, metode pembayaran, hingga catatan kaki struk.
-   - Tombol **Bagikan Struk** ditempatkan di pojok kanan atas dialog detail transaksi untuk kemudahan akses kirim struk ke WhatsApp pelanggan.
+3. **✨ Format Otomatis Titik Pemisah Ribuan (Real-Time Formatting)**
+   - Setiap kali pengguna mengisi kolom angka di seluruh aplikasi, sistem secara otomatis menambahkan titik pemisah ribuan secara *real-time* (contoh: `10000` otomatis menjadi `10.000`, `1000000` menjadi `1.000.000`).
+   - Diterapkan secara menyeluruh pada: Harga Modal & Jual Produk, Kuantitas Stok & Batas Menipis, Tambah & Kurangi Stok, Nominal Bayar Kasir Tunai, Pelunasan & Cicilan Kasbon, Modal Awal Toko, Potongan Diskon Nominal, dan Pencatatan Pengeluaran.
+   - Menghilangkan risiko kesalahan ketik jumlah digit nol saat situasi antrean kasir sedang ramai.
 
-4. **⚡ Optimalisasi Kinerja & Android 16 Readiness**
-   - Dukungan penuh kompilasi Kotlin 2.0+ dan Android SDK 36.
-   - Penguatan integritas data lokal Room Database dan peningkatan efisiensi render antarmuka Jetpack Compose.
+4. **🌟 Opening Screen Dinamis & Personalisasi Toko**
+   - Layar pembuka (*splash/opening screen*) adaptif saat pertama kali aplikasi dijalankan.
+   - Secara *default* menampilkan identitas resmi aplikasi, namun begitu pemilik toko mengubah Nama Toko dan Alamat di menu Pengaturan, layar pembuka otomatis bertransformasi menampilkan nama usaha dan alamat toko pengguna.
+
+5. **🎨 Personalisasi Visual & Sistem Pembayaran Lengkap**
+   - 4 Pilihan tema warna utama: **Biru** (*Oceanic Modernity*), **Pink** (*Blush Blossom*), **Coklat** (*Terra & Flora*), dan **Orange** (*Solar Flare*) dengan dukungan penuh **Mode Terang** dan **Mode Gelap**.
+   - Manajemen rekening bank transfer toko, metode pembayaran QRIS dengan fitur pemotong foto presisi 1:1, serta ekspor struk digital resmi berformat PDF.
 
 ---
 
@@ -86,14 +91,16 @@ Versi **1.6.0** menghadirkan pembaruan besar pada sistem kustomisasi visual, man
 
 ### 📋 Matriks Solusi Fitur
 
-| Modul Fitur | Ikon | Kemampuan Utama | Manfaat Nyata untuk Mahasiswa |
+| Modul Fitur | Ikon | Kemampuan Utama | Manfaat Nyata untuk Pelajar & Mahasiswa |
 | :--- | :---: | :--- | :--- |
 | **Kasir Cepat** | 🛒 | Keranjang belanja instan, tombol kuantitas responsif, input diskon, dan catatan pesanan | Transaksi selesai dalam hitungan detik saat jeda pergantian kelas |
+| **Scan & Generate Barcode** | 🏷️ | Pindai barcode via kamera & buat barcode EAN-13 otomatis untuk produk tanpa barcode | Input barang dan pencarian kasir super cepat tanpa ketik manual |
+| **Pemisah Ribuan Otomatis** | 🔢 | Format titik ribuan *real-time* pada setiap pengisian nominal harga dan stok | Mencegah kekeliruan nominal nol saat jam sibuk transaksi |
 | **QRIS Smart Crop** | 📱 | Unggah gambar QRIS statis dengan alat pemotong presisi rasio 1:1 langsung di aplikasi | Pembeli dapat memindai kode QR dengan cepat tanpa perlu zoom |
 | **Kasbon & Piutang** | 🤝 | Catat nama teman, rincian barang, nominal hutang, kontak, dan status pelunasan | Modal jualan aman dari lupa; ada rekap sisa piutang di beranda |
 | **Kembalian Tertunda** | 🪙 | Simpan nominal kembalian pembeli yang belum diserahkan akibat ketiadaan receh | Transaksi tetap jalan lancar tanpa panik mencari uang tukar |
 | **Manajemen Stok** | 📦 | Hitung harga beli (modal) vs jual, kalkulasi margin profit, restock, & catat barang rusak | Mengetahui keuntungan bersih riil dan mencegah stok habis tiba-tiba |
-| **Laporan & Arus Kas** | 📊 | Ringkasan laba bersih, produk terlaris (best-seller), dan catatan pengeluaran harian | Membantu evaluasi produk mana yang paling disukai teman kampus |
+| **Laporan & Arus Kas** | 📊 | Ringkasan laba bersih, produk terlaris (best-seller), dan catatan pengeluaran harian | Membantu evaluasi produk mana yang paling disukai pembeli |
 | **Desain Responsif** | 📐 | Mengadopsi *Oceanic Modernity Design System* dengan adaptasi layar 360dp, 412dp, & 430dp | Tampilan presisi, nyaman di mata, dan konsisten di segala model smartphone |
 
 <br />
@@ -171,6 +178,8 @@ Kelola mengadopsi prinsip **100% Local-First**, di mana seluruh data bisnis maha
 | **Bahasa Pemrograman** | [Kotlin](https://kotlinlang.org/) | `2.0+` | Bahasa modern utama dengan Kotlin Coroutines & StateFlow |
 | **UI Framework** | [Jetpack Compose](https://developer.android.com/jetpack/compose) | Material 3 | Desain deklaratif modern dengan Single Activity Architecture |
 | **Penyimpanan Lokal** | [Android Jetpack Room](https://developer.android.com/training/data-storage/room) | SQLite ORM | Abstraksi database lokal, automasi migrasi, dan query reaktif |
+| **Pemindaian Barcode** | [Google ML Kit](https://developers.google.com/ml-kit/vision/barcode-scanning) & CameraX | `17.3.0` | Pemindaian barcode kamera berkecepatan tinggi secara offline |
+| **Generator Barcode** | [ZXing Core](https://github.com/zxing/zxing) | `3.5.3` | Pembuatan matriks grafis barcode EAN-13 beresolusi tinggi |
 | **Pengolahan Gambar** | [Coil Compose](https://coil-kt.github.io/coil/) | Async Image Loader | Pemuatan cepat foto katalog produk & gambar kode QRIS |
 | **Pola Arsitektur** | MVVM (Model-View-ViewModel) | Reactive Streams | Pemisahan Presentation, Domain, dan Data Layer yang terstruktur |
 | **Build Tooling** | Gradle | `9.3.1` (Kotlin DSL) | Konfigurasi modular, automasi build, dan kompresi bundle |
@@ -183,8 +192,9 @@ Kelola mengadopsi prinsip **100% Local-First**, di mana seluruh data bisnis maha
 | :--- | :--- | :--- |
 | **Sistem Operasi** | Android 7.0 (Nougat / API 24) | Android 11.0 (API 30) atau lebih baru |
 | **Ukuran Layar** | 320dp (Compact Phone) | 360dp – 430dp (FHD+ Standard Phone) |
+| **Kamera** | Kamera Belakang (Autofokus) | Mendukung Flashlight untuk pemindaian minim cahaya |
 | **Koneksi Internet** | Tidak Diperlukan (100% Offline) | Opsional (hanya saat mengunduh berkas APK) |
-| **Penyimpanan Bebas** | ~35 MB | 100 MB (untuk menampung riwayat & foto produk) |
+| **Penyimpanan Bebas** | ~60 MB | 150 MB (untuk menampung riwayat & foto produk) |
 
 ---
 

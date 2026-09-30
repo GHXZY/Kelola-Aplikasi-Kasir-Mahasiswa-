@@ -14,7 +14,11 @@ data class CategoryEntity(
 
 @Entity(
     tableName = "products",
-    indices = [Index(value = ["categoryId"]), Index(value = ["name"])]
+    indices = [
+        Index(value = ["categoryId"]),
+        Index(value = ["name"]),
+        Index(value = ["barcode"], unique = true)
+    ]
 )
 data class ProductEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -26,6 +30,7 @@ data class ProductEntity(
     val minimumStock: Int = 5,
     val unit: String = "pcs", // pcs, botol, bungkus, gelas, porsi
     val imageUri: String? = null,
+    val barcode: String? = null, // Barcode EAN-13 / Code 128 (unik per produk aktif)
     val expirationDate: Long? = null, // Tanggal Kadaluarsa (timestamp ms), null jika tidak ada
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.RemoveShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -56,6 +57,7 @@ import com.example.data.local.entity.ProductEntity
 import com.example.ui.CartSummary
 import com.example.ui.components.CategoryChipGroup
 import com.example.ui.components.EmptyState
+import com.example.ui.components.KelolaSecondaryButton
 import com.example.ui.components.SearchField
 import com.example.ui.components.StockBadge
 import com.example.ui.theme.BorderLight
@@ -90,6 +92,7 @@ fun CashierScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryName by remember { mutableStateOf("Semua") }
     var showCancelOrderDialog by remember { mutableStateOf(false) }
+    var showBarcodeScanner by remember { mutableStateOf(false) }
 
     val categoryMap = remember(categories) {
         categories.associateBy { it.id }
@@ -103,6 +106,7 @@ fun CashierScreen(
         products.filter { prod ->
             val matchSearch = searchQuery.isBlank() ||
                     prod.name.contains(searchQuery, ignoreCase = true) ||
+                    (prod.barcode?.contains(searchQuery.trim(), ignoreCase = true) == true) ||
                     (categoryMap[prod.categoryId]?.name?.contains(searchQuery, ignoreCase = true) == true)
 
             val matchCategory = selectedCategoryName == "Semua" ||
@@ -125,11 +129,21 @@ fun CashierScreen(
         ) {
             Spacer(modifier = Modifier.height(KelolaSpacing.Space1))
 
-            // Search Bar
+            // Search Bar & Barcode Scanner Integration
             SearchField(
                 query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                placeholder = "Cari produk atau kategori...",
+                onQueryChange = { newQuery ->
+                    val trimmed = newQuery.trim()
+                    // Deteksi instan jika input adalah hasil pemindaian scanner barcode (cocok tepat dengan barcode produk)
+                    val exactScannedProduct = products.find { it.barcode != null && it.barcode.equals(trimmed, ignoreCase = true) }
+                    if (exactScannedProduct != null && exactScannedProduct.stock > 0 && trimmed.length >= 8) {
+                        onAddToCart(exactScannedProduct)
+                        searchQuery = "" // Reset query agar kasir langsung siap untuk scan berikutnya
+                    } else {
+                        searchQuery = newQuery
+                    }
+                },
+                placeholder = "Cari produk, kategori, atau barcode...",
                 testTag = "cashier_search_input"
             )
 
@@ -140,6 +154,18 @@ fun CashierScreen(
                 categories = categoryNames,
                 selectedCategory = selectedCategoryName,
                 onSelectCategory = { selectedCategoryName = it }
+            )
+
+            Spacer(modifier = Modifier.height(KelolaSpacing.Space2))
+
+            // Tombol [ Scan Barcode ] (Search -> Kategori -> [ Scan Barcode ] -> Daftar Produk)
+            KelolaSecondaryButton(
+                text = "Scan Barcode",
+                icon = Icons.Default.QrCodeScanner,
+                onClick = { showBarcodeScanner = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("button_scan_barcode_cashier")
             )
 
             Spacer(modifier = Modifier.height(KelolaSpacing.Space3))
@@ -610,6 +636,20 @@ fun CashierScreen(
                 },
                 shape = KelolaRadius.ShapeCard,
                 containerColor = MaterialTheme.colorScheme.surface
+            )
+        }
+
+        // Dialog Scanner Barcode Kamera (CameraX + ML Kit)
+        if (showBarcodeScanner) {
+            BarcodeScannerDialog(
+                products = products,
+                cart = cart,
+                onProductScanned = { scannedProduct ->
+                    onAddToCart(scannedProduct)
+                },
+                onDismissRequest = {
+                    showBarcodeScanner = false
+                }
             )
         }
     }

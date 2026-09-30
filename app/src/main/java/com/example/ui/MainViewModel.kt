@@ -147,10 +147,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // --- Preferences / Business Info ---
-    private val _businessName = MutableStateFlow(prefs.getString("business_name", "Kantin Mahasiswa") ?: "Kantin Mahasiswa")
+    private val _hasEditedStoreProfile = MutableStateFlow(
+        prefs.getBoolean("has_edited_store_profile", false) ||
+        (prefs.contains("business_name") && prefs.getString("business_name", "") !in listOf("", "Kantin Mahasiswa", "Kelola"))
+    )
+    val hasEditedStoreProfile: StateFlow<Boolean> = _hasEditedStoreProfile.asStateFlow()
+
+    private val _businessName = MutableStateFlow(
+        prefs.getString("business_name", if (_hasEditedStoreProfile.value) "Kantin Mahasiswa" else "Kelola") ?: "Kelola"
+    )
     val businessName: StateFlow<String> = _businessName.asStateFlow()
 
-    private val _businessAddress = MutableStateFlow(prefs.getString("business_address", "Gedung Utama Kampus Lt. 1") ?: "Gedung Utama Kampus Lt. 1")
+    private val _businessAddress = MutableStateFlow(
+        prefs.getString("business_address", if (_hasEditedStoreProfile.value) "Gedung Utama Kampus Lt. 1" else "Mudah Berjualan di Sekolah") ?: "Mudah Berjualan di Sekolah"
+    )
     val businessAddress: StateFlow<String> = _businessAddress.asStateFlow()
 
     private val _businessPhone = MutableStateFlow(prefs.getString("business_phone", "0812-3456-7890") ?: "0812-3456-7890")
@@ -197,16 +207,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val previousSalesNote: StateFlow<String> = _previousSalesNote.asStateFlow()
 
     fun updateBusinessInfo(name: String, address: String, phone: String) {
-        val trimmedName = name.trim().ifEmpty { "Kantin Mahasiswa" }
+        val trimmedName = name.trim().ifEmpty { "Kelola" }
         val trimmedAddress = address.trim()
         val trimmedPhone = phone.trim()
         _businessName.value = trimmedName
         _businessAddress.value = trimmedAddress
         _businessPhone.value = trimmedPhone
+        _hasEditedStoreProfile.value = true
         prefs.edit()
             .putString("business_name", trimmedName)
             .putString("business_address", trimmedAddress)
             .putString("business_phone", trimmedPhone)
+            .putBoolean("has_edited_store_profile", true)
             .apply()
     }
 
@@ -438,8 +450,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (internalFile.exists()) internalFile.delete()
             } catch (_: Exception) {}
             prefs.edit().clear().apply()
-            _businessName.value = "Kantin Mahasiswa"
-            _businessAddress.value = "Gedung Utama Kampus Lt. 1"
+            _hasEditedStoreProfile.value = false
+            _businessName.value = "Kelola"
+            _businessAddress.value = "Mudah Berjualan di Sekolah"
             _businessPhone.value = "0812-3456-7890"
             _receiptFooter.value = "Terima kasih atas kunjungan Anda!"
             _qrisMerchantName.value = "Kantin Mahasiswa"
@@ -487,9 +500,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateBusinessName(newName: String) {
-        val trimmed = newName.trim().ifEmpty { "Kantin Mahasiswa" }
+        val trimmed = newName.trim().ifEmpty { "Kelola" }
         _businessName.value = trimmed
-        prefs.edit().putString("business_name", trimmed).apply()
+        _hasEditedStoreProfile.value = true
+        prefs.edit()
+            .putString("business_name", trimmed)
+            .putBoolean("has_edited_store_profile", true)
+            .apply()
     }
 
     fun updateThemeMode(mode: String) {
@@ -1068,6 +1085,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReportStats())
 
+    // --- Barcode Helpers ---
+    suspend fun generateUniqueBarcode(excludeProductId: Long? = null): String? {
+        var attempts = 0
+        while (attempts < 25) {
+            val candidate = com.example.util.BarcodeUtils.generateEan13Candidate("899")
+            if (repository.isBarcodeUnique(candidate, excludeProductId)) {
+                return candidate
+            }
+            attempts++
+        }
+        return null
+    }
+
+    suspend fun checkBarcodeAvailability(barcode: String, excludeProductId: Long? = null): Boolean {
+        val clean = barcode.trim()
+        if (clean.isBlank()) return true
+        return repository.isBarcodeUnique(clean, excludeProductId)
+    }
+
+    suspend fun getProductByBarcode(barcode: String): ProductEntity? {
+        val clean = barcode.trim()
+        if (clean.isBlank()) return null
+        return repository.getProductByBarcode(clean)
+    }
+
     // --- Product Actions ---
     fun addProduct(
         name: String,
@@ -1077,7 +1119,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         stock: Int,
         minStock: Int,
         unit: String,
-        expirationDate: Long? = null
+        expirationDate: Long? = null,
+        barcode: String? = null
     ) {
         viewModelScope.launch {
             if (name.isBlank()) {
@@ -1089,6 +1132,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 return@launch
             }
 
+            val cleanBarcode = barcode?.trim()?.ifBlank { null }
+            if (cleanBarcode != null && !repository.isBarcodeUnique(cleanBarcode)) {
+                _userMessage.emit("Barcode sudah digunakan oleh produk lain.")
+                return@launch
+            }
+
             val product = ProductEntity(
                 name = name.trim(),
                 categoryId = categoryId,
@@ -1097,6 +1146,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 stock = stock.coerceAtLeast(0),
                 minimumStock = minStock.coerceAtLeast(0),
                 unit = unit.ifBlank { "pcs" },
+                barcode = cleanBarcode,
                 expirationDate = expirationDate
             )
             repository.insertProduct(product)
@@ -1106,7 +1156,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateProduct(product: ProductEntity) {
         viewModelScope.launch {
-            repository.updateProduct(product)
+            val cleanBarcode = product.barcode?.trim()?.ifBlank { null }
+            if (cleanBarcode != null && !repository.isBarcodeUnique(cleanBarcode, product.id)) {
+                _userMessage.emit("Barcode sudah digunakan oleh produk lain.")
+                return@launch
+            }
+            repository.updateProduct(product.copy(barcode = cleanBarcode))
             _userMessage.emit("Perubahan produk '${product.name}' berhasil disimpan!")
         }
     }

@@ -73,7 +73,7 @@ fun SettleDebtDialog(
     onDismiss: () -> Unit
 ) {
     var isFullPayment by remember { mutableStateOf(true) }
-    var partialAmountInput by remember { mutableStateOf(debt.remainingAmount.toString()) }
+    var partialAmountInput by remember { mutableStateOf(FormatUtils.formatNumberWithDots(debt.remainingAmount)) }
     var selectedMethod by remember { mutableStateOf("Tunai") }
     var noteInput by remember { mutableStateOf("") }
 
@@ -211,7 +211,7 @@ fun SettleDebtDialog(
                         selected = isFullPayment,
                         onClick = {
                             isFullPayment = true
-                            partialAmountInput = debt.remainingAmount.toString()
+                            partialAmountInput = FormatUtils.formatNumberWithDots(debt.remainingAmount)
                         },
                         shape = KelolaRadius.ShapeSmall,
                         label = { Text("Pelunasan Penuh") },
@@ -242,7 +242,7 @@ fun SettleDebtDialog(
                         onClick = {
                             isFullPayment = false
                             if (parsedPartialAmount <= 0) {
-                                partialAmountInput = (debt.remainingAmount / 2).toString()
+                                partialAmountInput = FormatUtils.formatNumberWithDots(debt.remainingAmount / 2)
                             }
                         },
                         shape = KelolaRadius.ShapeSmall,
@@ -274,7 +274,7 @@ fun SettleDebtDialog(
                 if (!isFullPayment) {
                     OutlinedTextField(
                         value = partialAmountInput,
-                        onValueChange = { partialAmountInput = it.filter { ch -> ch.isDigit() } },
+                        onValueChange = { partialAmountInput = FormatUtils.formatRupiahInput(it) },
                         label = { Text("Nominal Bayar (Rp)") },
                         prefix = { Text("Rp ", fontWeight = FontWeight.Bold) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

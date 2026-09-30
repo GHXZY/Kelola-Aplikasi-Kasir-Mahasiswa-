@@ -97,16 +97,16 @@ fun AddEditProductDialog(
         mutableStateOf(initialProduct?.categoryId ?: (categories.firstOrNull()?.id ?: 1L))
     }
     var costPriceText by remember {
-        mutableStateOf(initialProduct?.costPrice?.toString() ?: "0")
+        mutableStateOf(if (initialProduct?.costPrice != null && initialProduct.costPrice > 0L) FormatUtils.formatNumberWithDots(initialProduct.costPrice) else "")
     }
     var sellingPriceText by remember {
-        mutableStateOf(initialProduct?.sellingPrice?.toString() ?: "")
+        mutableStateOf(if (initialProduct?.sellingPrice != null && initialProduct.sellingPrice > 0L) FormatUtils.formatNumberWithDots(initialProduct.sellingPrice) else "")
     }
     var stockText by remember {
-        mutableStateOf(initialProduct?.stock?.toString() ?: "0")
+        mutableStateOf(if (initialProduct != null) FormatUtils.formatNumberWithDots(initialProduct.stock.toLong()) else "0")
     }
     var minStockText by remember {
-        mutableStateOf(initialProduct?.minimumStock?.toString() ?: "5")
+        mutableStateOf(if (initialProduct != null) FormatUtils.formatNumberWithDots(initialProduct.minimumStock.toLong()) else "5")
     }
     var unit by remember { mutableStateOf(initialProduct?.unit ?: "pcs") }
     var expirationDate by remember { mutableStateOf<Long?>(initialProduct?.expirationDate) }
@@ -232,7 +232,7 @@ fun AddEditProductDialog(
                 ) {
                     OutlinedTextField(
                         value = costPriceText,
-                        onValueChange = { costPriceText = it.filter { c -> c.isDigit() } },
+                        onValueChange = { costPriceText = FormatUtils.formatRupiahInput(it) },
                         label = { Text("Harga Modal (HPP)") },
                         prefix = { Text("Rp ") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -248,8 +248,8 @@ fun AddEditProductDialog(
                     OutlinedTextField(
                         value = sellingPriceText,
                         onValueChange = {
-                            sellingPriceText = it.filter { c -> c.isDigit() }
-                            sellingPriceError = (sellingPriceText.toLongOrNull() ?: 0L) <= 0
+                            sellingPriceText = FormatUtils.formatRupiahInput(it)
+                            sellingPriceError = FormatUtils.parseRupiahInput(sellingPriceText) <= 0
                         },
                         label = { Text("Harga Jual *") },
                         prefix = { Text("Rp ") },
@@ -274,7 +274,7 @@ fun AddEditProductDialog(
                 ) {
                     OutlinedTextField(
                         value = stockText,
-                        onValueChange = { stockText = it.filter { c -> c.isDigit() } },
+                        onValueChange = { stockText = FormatUtils.formatRupiahInput(it) },
                         label = { Text(if (isEditing) "Stok Saat Ini" else "Stok Awal") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
@@ -290,7 +290,7 @@ fun AddEditProductDialog(
 
                     OutlinedTextField(
                         value = minStockText,
-                        onValueChange = { minStockText = it.filter { c -> c.isDigit() } },
+                        onValueChange = { minStockText = FormatUtils.formatRupiahInput(it) },
                         label = { Text("Batas Min. Stok") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
@@ -469,15 +469,15 @@ fun AddEditProductDialog(
                         nameError = true
                         return@Button
                     }
-                    val sp = sellingPriceText.toLongOrNull() ?: 0L
+                    val sp = FormatUtils.parseRupiahInput(sellingPriceText)
                     if (sp <= 0) {
                         sellingPriceError = true
                         return@Button
                     }
 
-                    val cp = costPriceText.toLongOrNull() ?: 0L
-                    val stk = stockText.toIntOrNull() ?: 0
-                    val minStk = minStockText.toIntOrNull() ?: 5
+                    val cp = FormatUtils.parseRupiahInput(costPriceText)
+                    val stk = FormatUtils.parseRupiahInput(stockText).toInt()
+                    val minStk = FormatUtils.parseRupiahInput(minStockText).toInt().coerceAtLeast(0)
 
                     onSaveProduct(
                         name.trim(),
@@ -515,7 +515,7 @@ fun RestockDialog(
     var note by remember { mutableStateOf("Belanja stok baru") }
     var recordExpense by remember { mutableStateOf(product.costPrice > 0) }
 
-    val addQty = addQtyText.toIntOrNull() ?: 0
+    val addQty = FormatUtils.parseRupiahInput(addQtyText).toInt()
     val totalCost = addQty * product.costPrice
     val finalStock = product.stock + addQty
 
@@ -561,7 +561,7 @@ fun RestockDialog(
 
                 OutlinedTextField(
                     value = addQtyText,
-                    onValueChange = { addQtyText = it.filter { c -> c.isDigit() } },
+                    onValueChange = { addQtyText = FormatUtils.formatRupiahInput(it) },
                     label = { Text("Jumlah Tambah Stok") },
                     suffix = { Text(product.unit) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -653,7 +653,7 @@ fun ReduceStockDialog(
     var reason by remember { mutableStateOf("Barang rusak") }
     val commonReasons = listOf("Barang rusak", "Kadaluarsa / Expired", "Konsumsi sendiri", "Hilang", "Koreksi stok")
 
-    val reduceQty = reduceQtyText.toIntOrNull() ?: 0
+    val reduceQty = FormatUtils.parseRupiahInput(reduceQtyText).toInt()
     val finalStock = (product.stock - reduceQty).coerceAtLeast(0)
     val isLossReason = reason.contains("rusak", ignoreCase = true) || reason.contains("expired", ignoreCase = true) || reason.contains("kadaluarsa", ignoreCase = true)
     val estimatedLoss = product.costPrice * reduceQty
@@ -702,7 +702,7 @@ fun ReduceStockDialog(
 
                 OutlinedTextField(
                     value = reduceQtyText,
-                    onValueChange = { reduceQtyText = it.filter { c -> c.isDigit() } },
+                    onValueChange = { reduceQtyText = FormatUtils.formatRupiahInput(it) },
                     label = { Text("Jumlah Pengurangan") },
                     suffix = { Text(product.unit) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

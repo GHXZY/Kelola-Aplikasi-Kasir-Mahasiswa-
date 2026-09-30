@@ -109,6 +109,7 @@ fun ProductScreen(
         products.filter { prod ->
             val matchSearch = searchQuery.isBlank() ||
                     prod.name.contains(searchQuery, ignoreCase = true) ||
+                    (prod.barcode?.contains(searchQuery.trim(), ignoreCase = true) == true) ||
                     (categoryMap[prod.categoryId]?.name?.contains(searchQuery, ignoreCase = true) == true)
 
             val matchCategory = selectedCategoryName == "Semua" ||
@@ -450,6 +451,17 @@ fun ProductScreen(
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
+
+                                            if (!product.barcode.isNullOrBlank()) {
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(
+                                                    text = "Barcode: ${product.barcode}",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
                                         }
                                     }
 
