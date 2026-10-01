@@ -108,6 +108,7 @@ export interface CustomerWithStats {
   totalPurchases: number;
   totalUnpaid: number;
   totalPendingChange: number;
+  totalPaid?: number;
 }
 
 export interface ExpenseEntity {

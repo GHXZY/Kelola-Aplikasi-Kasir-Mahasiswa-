@@ -82,7 +82,8 @@ data class CustomerWithStats(
     val customer: CustomerEntity,
     val totalPurchases: Int = 0,
     val totalUnpaid: Long = 0L,
-    val totalPendingChange: Long = 0L
+    val totalPendingChange: Long = 0L,
+    val totalPaid: Long = 0L
 )
 
 data class DashboardStats(
@@ -590,11 +591,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val pendingChange = changeRecordList
                 .filter { it.customerId == customer.id && it.status == "PENDING" }
                 .sumOf { it.amount }
+
+            // Calculate total money received from this customer
+            val completedTxIds = transactionList
+                .filter { it.customerId == customer.id && it.status == "COMPLETED" }
+                .map { it.id }
+                .toSet()
+
+            val directPaid = transactionList
+                .filter { it.customerId == customer.id && it.status == "COMPLETED" }
+                .sumOf { it.total }
+
+            val debtPaid = debtList
+                .filter { it.customerId == customer.id && !completedTxIds.contains(it.transactionId) }
+                .sumOf { (it.amount - it.remainingAmount).coerceAtLeast(0L) }
+
+            val totalPaid = directPaid + debtPaid
+
             CustomerWithStats(
                 customer = customer,
                 totalPurchases = purchases,
                 totalUnpaid = unpaid,
-                totalPendingChange = pendingChange
+                totalPendingChange = pendingChange,
+                totalPaid = totalPaid
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

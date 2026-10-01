@@ -95,6 +95,7 @@ import com.example.ui.theme.BrandPrimary
 import com.example.ui.theme.DangerContainer
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.KelolaRadius
+import com.example.ui.theme.KelolaSpacing
 import com.example.ui.theme.SuccessContainer
 import com.example.ui.theme.SuccessGreen
 import com.example.util.BarcodeUtils
@@ -415,7 +416,7 @@ fun AddEditProductScreen(
             // CARD 1: INFORMASI DETAIL PRODUK
             // -------------------------------------------------------------
             Card(
-                shape = RoundedCornerShape(12.dp),
+                shape = KelolaRadius.ShapeCard,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
@@ -448,7 +449,7 @@ fun AddEditProductScreen(
                             },
                             singleLine = true,
                             isError = nameError,
-                            shape = RoundedCornerShape(8.dp),
+                            shape = KelolaRadius.ShapeInput,
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -459,7 +460,7 @@ fun AddEditProductScreen(
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(50.dp)
+                                .height(KelolaSpacing.InputHeight)
                                 .testTag("input_product_name")
                         )
                         if (nameError) {
@@ -485,12 +486,12 @@ fun AddEditProductScreen(
                             // Dropdown selector
                             Box(modifier = Modifier.weight(1f)) {
                                 Surface(
-                                    shape = RoundedCornerShape(8.dp),
+                                    shape = KelolaRadius.ShapeInput,
                                     color = MaterialTheme.colorScheme.surfaceVariant,
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(44.dp)
+                                        .height(KelolaSpacing.InputHeight)
                                         .clickable { showCategoryDropdown = true }
                                 ) {
                                     Row(
@@ -533,12 +534,12 @@ fun AddEditProductScreen(
 
                             // Plus Button for New Category
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
                                 modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .size(KelolaSpacing.InputHeight)
+                                    .clip(KelolaRadius.ShapeInput)
                                     .clickable { onOpenAddCategory() }
                                     .testTag("button_add_category_modal")
                             ) {
@@ -578,7 +579,7 @@ fun AddEditProductScreen(
                                 placeholder = { Text("0", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -589,7 +590,7 @@ fun AddEditProductScreen(
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp)
+                                    .height(KelolaSpacing.InputHeight)
                             )
                         }
 
@@ -616,7 +617,7 @@ fun AddEditProductScreen(
                                 singleLine = true,
                                 isError = sellingPriceError,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -628,7 +629,7 @@ fun AddEditProductScreen(
                                 textStyle = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp)
+                                    .height(KelolaSpacing.InputHeight)
                                     .testTag("input_product_selling_price")
                             )
                         }
@@ -658,7 +659,7 @@ fun AddEditProductScreen(
                                 placeholder = { Text("0", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -669,7 +670,7 @@ fun AddEditProductScreen(
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp)
+                                    .height(KelolaSpacing.InputHeight)
                             )
                         }
 
@@ -692,7 +693,7 @@ fun AddEditProductScreen(
                                 placeholder = { Text("3", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -703,7 +704,7 @@ fun AddEditProductScreen(
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp)
+                                    .height(KelolaSpacing.InputHeight)
                             )
                         }
                     }
@@ -725,14 +726,14 @@ fun AddEditProductScreen(
                             items(units) { u ->
                                 val isSelected = unit == u
                                 Surface(
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = KelolaRadius.ShapeChip,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                     border = BorderStroke(
                                         1.dp,
                                         if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
                                     ),
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
+                                        .clip(KelolaRadius.ShapeChip)
                                         .clickable { unit = u }
                                 ) {
                                     Text(
@@ -753,7 +754,7 @@ fun AddEditProductScreen(
             // CARD 2: MASA SIMPAN & KADALUARSA (Sama persis dengan AddEditProductScreen.tsx)
             // -------------------------------------------------------------
             Card(
-                shape = RoundedCornerShape(12.dp),
+                shape = KelolaRadius.ShapeCard,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
@@ -830,7 +831,7 @@ fun AddEditProductScreen(
                         ) {
                             // Tanggal Saja
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 color = if (expiryMode == "DATE_ONLY") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 border = BorderStroke(
                                     1.dp,
@@ -838,8 +839,8 @@ fun AddEditProductScreen(
                                 ),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(38.dp)
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .height(KelolaSpacing.ButtonHeightCompact)
+                                    .clip(KelolaRadius.ShapeInput)
                                     .clickable { expiryMode = "DATE_ONLY" }
                             ) {
                                 Row(
@@ -865,7 +866,7 @@ fun AddEditProductScreen(
 
                             // Tanggal & Jam
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 color = if (expiryMode == "DATE_TIME") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 border = BorderStroke(
                                     1.dp,
@@ -873,8 +874,8 @@ fun AddEditProductScreen(
                                 ),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(38.dp)
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .height(KelolaSpacing.ButtonHeightCompact)
+                                    .clip(KelolaRadius.ShapeInput)
                                     .clickable { expiryMode = "DATE_TIME" }
                             ) {
                                 Row(
@@ -918,13 +919,13 @@ fun AddEditProductScreen(
                                     )
                                 )
                                 Surface(
-                                    shape = RoundedCornerShape(8.dp),
+                                    shape = KelolaRadius.ShapeInput,
                                     color = MaterialTheme.colorScheme.surfaceVariant,
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(44.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .height(KelolaSpacing.InputHeight)
+                                        .clip(KelolaRadius.ShapeInput)
                                         .clickable { openDatePicker() }
                                 ) {
                                     Row(
@@ -964,13 +965,13 @@ fun AddEditProductScreen(
                                         )
                                     )
                                     Surface(
-                                        shape = RoundedCornerShape(8.dp),
+                                        shape = KelolaRadius.ShapeInput,
                                         color = MaterialTheme.colorScheme.surfaceVariant,
                                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(44.dp)
-                                            .clip(RoundedCornerShape(8.dp))
+                                            .height(KelolaSpacing.InputHeight)
+                                            .clip(KelolaRadius.ShapeInput)
                                             .clickable { openTimePicker() }
                                     ) {
                                         Row(
@@ -1021,11 +1022,11 @@ fun AddEditProductScreen(
                             ) {
                                 items(presets) { (label, days) ->
                                     Surface(
-                                        shape = RoundedCornerShape(14.dp),
+                                        shape = KelolaRadius.ShapeChip,
                                         color = MaterialTheme.colorScheme.surfaceVariant,
                                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                         modifier = Modifier
-                                            .clip(RoundedCornerShape(14.dp))
+                                            .clip(KelolaRadius.ShapeChip)
                                             .clickable { setPresetDays(days) }
                                     ) {
                                         Text(
@@ -1043,7 +1044,7 @@ fun AddEditProductScreen(
                         // Summary Notice
                         if (expiryDate.isNotBlank()) {
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeSmall,
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
                                 modifier = Modifier.fillMaxWidth()
@@ -1086,7 +1087,7 @@ fun AddEditProductScreen(
             // CARD 3: SECTION BARCODE (Fitur Opsional)
             // -------------------------------------------------------------
             Card(
-                shape = RoundedCornerShape(12.dp),
+                shape = KelolaRadius.ShapeCard,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
@@ -1127,7 +1128,7 @@ fun AddEditProductScreen(
                         // Badge Status: Opsional vs Tersedia
                         if (barcode.isNotBlank()) {
                             Surface(
-                                shape = RoundedCornerShape(12.dp),
+                                shape = KelolaRadius.ShapeSmall,
                                 color = SuccessContainer
                             ) {
                                 Row(
@@ -1151,7 +1152,7 @@ fun AddEditProductScreen(
                             }
                         } else {
                             Surface(
-                                shape = RoundedCornerShape(12.dp),
+                                shape = KelolaRadius.ShapeSmall,
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
                                 Text(
@@ -1170,7 +1171,7 @@ fun AddEditProductScreen(
                     // Error Message
                     if (barcodeErrorMessage != null) {
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
+                            shape = KelolaRadius.ShapeSmall,
                             color = DangerContainer,
                             border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f)),
                             modifier = Modifier.fillMaxWidth()
@@ -1244,9 +1245,9 @@ fun AddEditProductScreen(
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(44.dp)
+                                    .height(KelolaSpacing.ButtonHeightCta)
                                     .testTag("button_generate_barcode"),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -1316,8 +1317,8 @@ fun AddEditProductScreen(
                                             onValueChange = { manualBarcodeInput = it.filter { c -> c.isLetterOrDigit() || c == '-' } },
                                             placeholder = { Text("Contoh: 8991234567890", fontSize = 12.sp) },
                                             singleLine = true,
-                                            modifier = Modifier.weight(1f).height(48.dp),
-                                            shape = RoundedCornerShape(8.dp),
+                                            modifier = Modifier.weight(1f).height(KelolaSpacing.InputHeight),
+                                            shape = KelolaRadius.ShapeInput,
                                             colors = OutlinedTextFieldDefaults.colors(
                                                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                                 focusedContainerColor = MaterialTheme.colorScheme.surface
@@ -1341,8 +1342,8 @@ fun AddEditProductScreen(
                                                     }
                                                 }
                                             },
-                                            shape = RoundedCornerShape(8.dp),
-                                            modifier = Modifier.height(48.dp)
+                                            shape = KelolaRadius.ShapeInput,
+                                            modifier = Modifier.height(KelolaSpacing.InputHeight)
                                         ) {
                                             Text("Terapkan", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                                         }
@@ -1360,7 +1361,7 @@ fun AddEditProductScreen(
                         ) {
                             // Container Preview Barcode (Background putih solid, border subtle, quiet zone rapi)
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeSmall,
                                 color = Color.White,
                                 border = BorderStroke(1.dp, BorderLight),
                                 modifier = Modifier
@@ -1380,7 +1381,7 @@ fun AddEditProductScreen(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(140.dp)
-                                                .clip(RoundedCornerShape(4.dp)),
+                                                .clip(KelolaRadius.ShapeSm),
                                             contentScale = ContentScale.Fit
                                         )
                                     } else {
@@ -1402,7 +1403,7 @@ fun AddEditProductScreen(
 
                             // Rincian Nilai Barcode + Tombol Salin
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeSmall,
                                 color = MaterialTheme.colorScheme.surfaceVariant,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
@@ -1433,7 +1434,7 @@ fun AddEditProductScreen(
                                             clipboardManager.setText(AnnotatedString(barcode))
                                             Toast.makeText(context, "Nomor barcode disalin: $barcode", Toast.LENGTH_SHORT).show()
                                         },
-                                        shape = RoundedCornerShape(6.dp),
+                                        shape = KelolaRadius.ShapeSm,
                                         color = MaterialTheme.colorScheme.surface,
                                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                                     ) {
@@ -1493,9 +1494,9 @@ fun AddEditProductScreen(
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(44.dp)
+                                    .height(KelolaSpacing.ButtonHeightCta)
                                     .testTag("button_download_barcode_png"),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = KelolaRadius.ShapeInput,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -1599,6 +1600,7 @@ fun AddEditProductScreen(
             if (showRegenerateConfirmDialog) {
                 AlertDialog(
                     onDismissRequest = { showRegenerateConfirmDialog = false },
+                    shape = KelolaRadius.ShapeLarge,
                     title = {
                         Text(
                             text = "Ganti Barcode Produk?",
@@ -1631,13 +1633,18 @@ fun AddEditProductScreen(
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            shape = KelolaRadius.ShapeInput,
+                            modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
                         ) {
                             Text("Ya, Buat Barcode Baru")
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showRegenerateConfirmDialog = false }) {
+                        TextButton(
+                            onClick = { showRegenerateConfirmDialog = false },
+                            modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
+                        ) {
                             Text("Batal")
                         }
                     }
@@ -1677,9 +1684,9 @@ fun AddEditProductScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(KelolaSpacing.ButtonHeightCta)
                     .testTag("button_save_product"),
-                shape = RoundedCornerShape(8.dp),
+                shape = KelolaRadius.ShapeInput,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -1735,6 +1742,7 @@ fun AddEditProductScreen(
             val dupProduct = duplicateProductDetected!!
             AlertDialog(
                 onDismissRequest = { duplicateProductDetected = null },
+                shape = KelolaRadius.ShapeLarge,
                 icon = {
                     Box(
                         modifier = Modifier
@@ -1827,14 +1835,16 @@ fun AddEditProductScreen(
                             onSelectProductToEdit?.invoke(target)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        shape = KelolaRadius.ShapeSmall
+                        shape = KelolaRadius.ShapeInput,
+                        modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
                     ) {
                         Text("Lihat/Edit Produk")
                     }
                 },
                 dismissButton = {
                     TextButton(
-                        onClick = { duplicateProductDetected = null }
+                        onClick = { duplicateProductDetected = null },
+                        modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
                     ) {
                         Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

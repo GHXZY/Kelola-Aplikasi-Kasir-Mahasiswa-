@@ -127,7 +127,7 @@ fun CustomExpirationPickerDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = KelolaRadius.ShapeCard,
+            shape = KelolaRadius.ShapeLarge,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp,
             modifier = Modifier

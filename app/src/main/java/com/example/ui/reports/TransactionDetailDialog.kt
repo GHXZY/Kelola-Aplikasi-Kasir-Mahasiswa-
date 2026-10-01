@@ -66,7 +66,7 @@ fun TransactionDetailDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Row(

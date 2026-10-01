@@ -112,7 +112,7 @@ fun EditDebtItemsDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = KelolaRadius.ShapeCard,
+            shape = KelolaRadius.ShapeLarge,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 4.dp,
             modifier = Modifier
@@ -486,7 +486,7 @@ fun EditDebtItemsDialog(
 
         AlertDialog(
             onDismissRequest = { showAddProductDialog = false },
-            shape = KelolaRadius.ShapeCard,
+            shape = KelolaRadius.ShapeLarge,
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(

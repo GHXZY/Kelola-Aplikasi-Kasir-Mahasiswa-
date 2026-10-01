@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -612,7 +613,7 @@ fun PaymentScreen(
                             if (qrisBitmap != null) {
                                 // TAMPILAN QRIS BESAR (Ukuran 280dp - 300dp)
                                 Surface(
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = KelolaRadius.ShapeLarge,
                                     color = Color.White,
                                     border = BorderStroke(2.dp, BorderLight),
                                     modifier = Modifier
@@ -632,7 +633,7 @@ fun PaymentScreen(
                             } else {
                                 // Placeholder jika belum upload QRIS
                                 Surface(
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = KelolaRadius.ShapeLarge,
                                     color = WarningContainer.copy(alpha = 0.5f),
                                     border = BorderStroke(1.5.dp, WarningAmber.copy(alpha = 0.5f)),
                                     modifier = Modifier
@@ -1185,19 +1186,27 @@ fun PaymentScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
+    }
 
-        // --- BOTTOM ACTION BAR ---
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
+    // --- BOTTOM ACTION BAR (STICKY DI BAWAH) ---
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+        shadowElevation = 8.dp
+    ) {
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            contentAlignment = Alignment.Center
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .widthIn(max = 760.dp)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
@@ -1299,7 +1308,7 @@ fun PaymentScreen(
             }
         }
     }
-    }
+}
 
     if (showCustomerPicker) {
         CustomerPickerDialog(

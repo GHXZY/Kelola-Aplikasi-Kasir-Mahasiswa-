@@ -659,7 +659,7 @@ private fun NoteCard(
                         )
 
                         Surface(
-                            shape = RoundedCornerShape(4.dp),
+                            shape = KelolaRadius.ShapeSm,
                             color = BrandSky.copy(alpha = 0.25f)
                         ) {
                             Text(

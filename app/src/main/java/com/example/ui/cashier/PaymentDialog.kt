@@ -959,7 +959,7 @@ fun PaymentDialog(
                     Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
-            shape = KelolaRadius.ShapeCard,
+            shape = KelolaRadius.ShapeLarge,
             containerColor = MaterialTheme.colorScheme.surface
         )
     }

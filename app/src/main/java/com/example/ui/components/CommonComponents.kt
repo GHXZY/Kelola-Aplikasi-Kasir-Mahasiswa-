@@ -674,20 +674,26 @@ fun ConfirmationDialog(
             Surface(
                 onClick = onConfirm,
                 shape = KelolaRadius.ShapeInput,
-                color = if (isDestructive) DangerRed else MaterialTheme.colorScheme.primary
+                color = if (isDestructive) DangerRed else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
             ) {
-                Text(
-                    text = confirmText,
-                    color = if (isDestructive) Color.White else MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-                )
+                Box(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = confirmText,
+                        color = if (isDestructive) Color.White else MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismiss,
-                shape = KelolaRadius.ShapeInput
+                shape = KelolaRadius.ShapeInput,
+                modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
             ) {
                 Text(
                     text = dismissText,
@@ -696,7 +702,7 @@ fun ConfirmationDialog(
                 )
             }
         },
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         containerColor = MaterialTheme.colorScheme.surface
     )
 }

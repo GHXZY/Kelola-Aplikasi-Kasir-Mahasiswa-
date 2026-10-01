@@ -62,32 +62,78 @@ class CustomerTest {
         val ahmadUnpaid = debts.filter { it.customerId == customer1.id && it.status != "PAID" }.sumOf { it.remainingAmount }
         val ahmadPendingChange = changeRecords.filter { it.customerId == customer1.id && it.status == "PENDING" }.sumOf { it.amount }
 
+        val ahmadCompletedTxIds = transactions.filter { it.customerId == customer1.id && it.status == "COMPLETED" }.map { it.id }.toSet()
+        val ahmadDirectPaid = transactions.filter { it.customerId == customer1.id && it.status == "COMPLETED" }.sumOf { it.total }
+        val ahmadDebtPaid = debts.filter { it.customerId == customer1.id && !ahmadCompletedTxIds.contains(it.transactionId) }.sumOf { (it.amount - it.remainingAmount).coerceAtLeast(0L) }
+        val ahmadTotalPaid = ahmadDirectPaid + ahmadDebtPaid
+
         val ahmadStats = CustomerWithStats(
             customer = customer1,
             totalPurchases = ahmadTxCount,
             totalUnpaid = ahmadUnpaid,
-            totalPendingChange = ahmadPendingChange
+            totalPendingChange = ahmadPendingChange,
+            totalPaid = ahmadTotalPaid
         )
 
         assertEquals("Ahmad should have 2 valid purchases (ignoring cancelled & unlinked manual)", 2, ahmadStats.totalPurchases)
         assertEquals("Ahmad should have 20000 unpaid debt", 20000L, ahmadStats.totalUnpaid)
         assertEquals("Ahmad should have 5000 pending change", 5000L, ahmadStats.totalPendingChange)
+        assertEquals("Ahmad should have 85000 total paid", 85000L, ahmadStats.totalPaid)
 
         // Compute stats for Budi (customerId = 2)
         val budiTxCount = transactions.count { it.customerId == customer2.id && it.status != "CANCELLED" }
         val budiUnpaid = debts.filter { it.customerId == customer2.id && it.status != "PAID" }.sumOf { it.remainingAmount }
         val budiPendingChange = changeRecords.filter { it.customerId == customer2.id && it.status == "PENDING" }.sumOf { it.amount }
 
+        val budiCompletedTxIds = transactions.filter { it.customerId == customer2.id && it.status == "COMPLETED" }.map { it.id }.toSet()
+        val budiDirectPaid = transactions.filter { it.customerId == customer2.id && it.status == "COMPLETED" }.sumOf { it.total }
+        val budiDebtPaid = debts.filter { it.customerId == customer2.id && !budiCompletedTxIds.contains(it.transactionId) }.sumOf { (it.amount - it.remainingAmount).coerceAtLeast(0L) }
+        val budiTotalPaid = budiDirectPaid + budiDebtPaid
+
         val budiStats = CustomerWithStats(
             customer = customer2,
             totalPurchases = budiTxCount,
             totalUnpaid = budiUnpaid,
-            totalPendingChange = budiPendingChange
+            totalPendingChange = budiPendingChange,
+            totalPaid = budiTotalPaid
         )
 
         assertEquals(1, budiStats.totalPurchases)
         assertEquals(30000L, budiStats.totalUnpaid)
         assertEquals(10000L, budiStats.totalPendingChange)
+        assertEquals(75000L, budiStats.totalPaid)
+    }
+
+    @Test
+    fun `test CustomerWithStats totalPaid calculation with partial debt payments`() {
+        val customer = CustomerEntity(id = 10L, name = "Dewi")
+
+        val txList = listOf(
+            TransactionEntity(id = 1L, transactionNumber = "TX-01", subtotal = 100000L, total = 100000L, cashReceived = 100000L, customerId = 10L, status = "COMPLETED"),
+            TransactionEntity(id = 2L, transactionNumber = "TX-02", subtotal = 50000L, total = 50000L, cashReceived = 0L, customerId = 10L, status = "UNPAID"),
+            TransactionEntity(id = 3L, transactionNumber = "TX-03", subtotal = 200000L, total = 200000L, cashReceived = 0L, customerId = 10L, status = "CANCELLED")
+        )
+
+        val debtList = listOf(
+            // Sisa 20k dari total 50k -> berarti sudah bayar 30k
+            DebtEntity(id = 5L, transactionId = 2L, customerName = "Dewi", customerId = 10L, amount = 50000L, remainingAmount = 20000L, status = "PARTIALLY_PAID")
+        )
+
+        val completedTxIds = txList.filter { it.customerId == customer.id && it.status == "COMPLETED" }.map { it.id }.toSet()
+        val directPaid = txList.filter { it.customerId == customer.id && it.status == "COMPLETED" }.sumOf { it.total }
+        val debtPaid = debtList.filter { it.customerId == customer.id && !completedTxIds.contains(it.transactionId) }.sumOf { (it.amount - it.remainingAmount).coerceAtLeast(0L) }
+        val totalPaid = directPaid + debtPaid
+
+        val stats = CustomerWithStats(
+            customer = customer,
+            totalPurchases = txList.count { it.customerId == customer.id && it.status != "CANCELLED" },
+            totalUnpaid = debtList.filter { it.customerId == customer.id && it.status != "PAID" }.sumOf { it.remainingAmount },
+            totalPaid = totalPaid
+        )
+
+        assertEquals("Should have 2 valid purchases", 2, stats.totalPurchases)
+        assertEquals("Should have 20000 unpaid debt", 20000L, stats.totalUnpaid)
+        assertEquals("Total money received should be 100k direct + 30k partial debt = 130k", 130000L, stats.totalPaid)
     }
 
     @Test

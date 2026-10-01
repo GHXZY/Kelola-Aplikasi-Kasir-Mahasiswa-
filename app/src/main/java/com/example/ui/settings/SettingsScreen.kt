@@ -1602,12 +1602,12 @@ fun SettingsScreen(
             .zIndex(99f)
     ) {
         Surface(
-            shape = RoundedCornerShape(24.dp),
+            shape = CircleShape,
             color = com.example.ui.theme.SuccessGreen,
             contentColor = Color.White,
             shadowElevation = 8.dp,
             modifier = Modifier
-                .clip(RoundedCornerShape(24.dp))
+                .clip(CircleShape)
                 .clickable { successMessage = null }
         ) {
             Row(
@@ -1697,7 +1697,7 @@ fun SettingsScreen(
     if (showAddBankDialog) {
         AlertDialog(
             onDismissRequest = { showAddBankDialog = false },
-            shape = KelolaRadius.ShapeCard,
+            shape = KelolaRadius.ShapeLarge,
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
@@ -1780,7 +1780,10 @@ fun SettingsScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddBankDialog = false }) {
+                TextButton(
+                    onClick = { showAddBankDialog = false },
+                    shape = KelolaRadius.ShapeInput
+                ) {
                     Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }

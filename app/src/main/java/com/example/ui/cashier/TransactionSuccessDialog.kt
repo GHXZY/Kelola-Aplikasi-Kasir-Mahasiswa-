@@ -62,7 +62,7 @@ fun TransactionSuccessDialog(
             onNewSale()
         },
         modifier = Modifier.widthIn(max = 440.dp),
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         containerColor = MaterialTheme.colorScheme.surface,
         title = null,
         text = {

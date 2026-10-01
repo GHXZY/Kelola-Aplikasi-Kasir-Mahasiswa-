@@ -78,6 +78,8 @@ import com.example.ui.theme.DangerContainer
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.KelolaRadius
 import com.example.ui.theme.KelolaSpacing
+import com.example.ui.theme.PrimaryBlue
+import com.example.ui.theme.PrimaryBlueContainer
 import com.example.ui.theme.SuccessContainer
 import com.example.ui.theme.SuccessGreen
 import com.example.ui.theme.WarningAmber
@@ -563,13 +565,14 @@ private fun CustomerCardItem(
                 // Pembelian
                 Surface(
                     shape = KelolaRadius.ShapeSmall,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                    color = PrimaryBlueContainer,
+                    border = BorderStroke(1.dp, PrimaryBlue.copy(alpha = 0.4f))
                 ) {
                     Text(
                         text = "${item.totalPurchases} pembelian",
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlue,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -578,10 +581,11 @@ private fun CustomerCardItem(
                 if (item.totalUnpaid > 0L) {
                     Surface(
                         shape = KelolaRadius.ShapeSmall,
-                        color = DangerContainer.copy(alpha = 0.5f)
+                        color = DangerContainer,
+                        border = BorderStroke(1.dp, DangerRed)
                     ) {
                         Text(
-                            text = "Belum bayar: ${FormatUtils.formatRupiah(item.totalUnpaid)}",
+                            text = "Kasbon: ${FormatUtils.formatRupiah(item.totalUnpaid)}",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = DangerRed,
@@ -591,11 +595,13 @@ private fun CustomerCardItem(
                 } else {
                     Surface(
                         shape = KelolaRadius.ShapeSmall,
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         Text(
-                            text = "Belum bayar: Rp0",
+                            text = "Kasbon: Nihil",
                             fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
@@ -606,25 +612,14 @@ private fun CustomerCardItem(
                 if (item.totalPendingChange > 0L) {
                     Surface(
                         shape = KelolaRadius.ShapeSmall,
-                        color = WarningContainer.copy(alpha = 0.5f)
+                        color = WarningContainer,
+                        border = BorderStroke(1.dp, WarningAmber)
                     ) {
                         Text(
                             text = "Kembalian: ${FormatUtils.formatRupiah(item.totalPendingChange)}",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = WarningAmber,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                } else {
-                    Surface(
-                        shape = KelolaRadius.ShapeSmall,
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    ) {
-                        Text(
-                            text = "Kembalian: Rp0",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }

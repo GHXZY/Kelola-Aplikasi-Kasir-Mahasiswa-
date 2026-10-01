@@ -80,6 +80,7 @@ import androidx.core.content.ContextCompat
 import com.example.ui.theme.DangerContainer
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.KelolaRadius
+import com.example.ui.theme.KelolaSpacing
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -423,9 +424,9 @@ private fun ProductScannerOverlay(
                 .size(width = 280.dp, height = 180.dp)
                 .border(
                     BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                    RoundedCornerShape(16.dp)
+                    KelolaRadius.ShapeLarge
                 )
-                .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(16.dp)),
+                .background(Color.Black.copy(alpha = 0.15f), KelolaRadius.ShapeLarge),
             contentAlignment = Alignment.Center
         ) {
             // Garis pemindai merah laser yang bergerak
@@ -446,7 +447,7 @@ private fun ProductScannerOverlay(
         ) {
             Surface(
                 onClick = onToggleTorch,
-                shape = RoundedCornerShape(24.dp),
+                shape = CircleShape,
                 color = if (isTorchOn) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.2f),
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
             ) {
@@ -493,7 +494,7 @@ private fun ProductScannerErrorCard(
     onSecondaryClick: () -> Unit
 ) {
     Surface(
-        shape = KelolaRadius.ShapeMedium,
+        shape = KelolaRadius.ShapeLarge,
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier
             .fillMaxWidth()
@@ -547,8 +548,8 @@ private fun ProductScannerErrorCard(
                     onClick = onPrimaryClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(46.dp),
-                    shape = KelolaRadius.ShapeSmall,
+                        .height(KelolaSpacing.ButtonHeightCta),
+                    shape = KelolaRadius.ShapeInput,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(text = primaryButtonText, fontWeight = FontWeight.SemiBold)
@@ -556,6 +557,7 @@ private fun ProductScannerErrorCard(
 
                 TextButton(
                     onClick = onSecondaryClick,
+                    shape = KelolaRadius.ShapeInput,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(

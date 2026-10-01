@@ -509,7 +509,7 @@ private fun ScannerOverlay(
             }
 
             Surface(
-                shape = RoundedCornerShape(20.dp),
+                shape = CircleShape,
                 color = Color.Black.copy(alpha = 0.6f)
             ) {
                 Text(
@@ -542,8 +542,8 @@ private fun ScannerOverlay(
             modifier = Modifier
                 .width(280.dp)
                 .height(180.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+                .clip(KelolaRadius.ShapeLarge)
+                .border(2.dp, MaterialTheme.colorScheme.primary, KelolaRadius.ShapeLarge)
                 .background(Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
@@ -559,7 +559,7 @@ private fun ScannerOverlay(
 
         // Bottom Instruction
         Surface(
-            shape = RoundedCornerShape(16.dp),
+            shape = CircleShape,
             color = Color.Black.copy(alpha = 0.65f),
             modifier = Modifier.padding(bottom = 32.dp)
         ) {
@@ -599,7 +599,7 @@ private fun ScannerResultCard(
     onSecondaryClick: () -> Unit
 ) {
     Surface(
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier
             .fillMaxWidth(0.9f)
@@ -661,7 +661,7 @@ private fun ScannerResultCard(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
+                    .height(KelolaSpacing.ButtonHeightCta)
                     .testTag("button_scanner_primary_action")
             ) {
                 Text(
@@ -676,7 +676,7 @@ private fun ScannerResultCard(
                 shape = KelolaRadius.ShapeInput,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp)
+                    .height(KelolaSpacing.ButtonHeightCompact)
                     .testTag("button_scanner_secondary_action")
             ) {
                 Text(

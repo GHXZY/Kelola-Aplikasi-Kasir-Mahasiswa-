@@ -605,7 +605,7 @@ fun PendingChangeItemCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Surface(
-                        shape = RoundedCornerShape(4.dp),
+                        shape = KelolaRadius.ShapeSm,
                         color = if (isPending) WarningContainer else SuccessContainer
                     ) {
                         Text(
@@ -653,7 +653,7 @@ fun PendingChangeItemCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp,
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant, KelolaRadius.ShapeSm)
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
@@ -665,7 +665,7 @@ fun PendingChangeItemCard(
                     shape = KelolaRadius.ShapeInput,
                     colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
                     modifier = Modifier
-                        .height(38.dp)
+                        .height(KelolaSpacing.ButtonHeightCompact)
                         .testTag("button_give_change_${item.id}")
                 ) {
                     Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))

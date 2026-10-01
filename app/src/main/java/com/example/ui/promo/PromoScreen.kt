@@ -244,7 +244,7 @@ fun PromoScreen(
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
-            shape = KelolaRadius.ShapeCard
+            shape = KelolaRadius.ShapeLarge
         )
     }
 }
@@ -1801,6 +1801,6 @@ private fun ProductSelectorDialog(
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = KelolaRadius.ShapeCard
+        shape = KelolaRadius.ShapeLarge
     )
 }

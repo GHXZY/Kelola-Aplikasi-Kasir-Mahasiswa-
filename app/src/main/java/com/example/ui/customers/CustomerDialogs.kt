@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -31,10 +32,13 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.Notes
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -83,8 +87,10 @@ import com.example.ui.theme.DangerRed
 import com.example.ui.theme.KelolaRadius
 import com.example.ui.theme.KelolaSpacing
 import com.example.ui.theme.PrimaryBlue
+import com.example.ui.theme.PrimaryBlueContainer
 import com.example.ui.theme.SuccessContainer
 import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.WarningAmber
 import com.example.ui.theme.WarningContainer
@@ -109,6 +115,8 @@ fun AddEditCustomerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = KelolaRadius.ShapeLarge,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
                 text = if (isEditing) "Edit Pelanggan" else "Tambah Pelanggan Baru",
@@ -265,18 +273,19 @@ fun CustomerProfileDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.94f)
-                .heightIn(max = 680.dp),
+                .widthIn(max = 520.dp)
+                .heightIn(max = 700.dp),
             shape = KelolaRadius.ShapeLarge,
             color = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
             tonalElevation = 6.dp
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Top Header
+                // Top Header (Solid, crisp background and high contrast text)
                 Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -288,19 +297,20 @@ fun CustomerProfileDialog(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Surface(
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                modifier = Modifier.size(42.dp)
+                                color = PrimaryBlueContainer,
+                                border = BorderStroke(1.5.dp, PrimaryBlue),
+                                modifier = Modifier.size(44.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = customer.name.take(1).uppercase(),
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = PrimaryBlue
                                     )
                                 }
                             }
@@ -309,7 +319,7 @@ fun CustomerProfileDialog(
                                     text = customer.name,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = TextPrimary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -321,65 +331,70 @@ fun CustomerProfileDialog(
                                         Icon(
                                             imageVector = Icons.Default.Phone,
                                             contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(12.dp)
+                                            tint = TextSecondary,
+                                            modifier = Modifier.size(13.dp)
                                         )
                                         Text(
                                             text = customer.phone,
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextSecondary
                                         )
                                     }
                                 }
                             }
                         }
 
+                        // Top actions: Edit & Delete buttons (NO 'X' button)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            IconButton(
-                                onClick = { onEditCustomer(customer) },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .testTag("button_edit_customer_profile")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edit Pelanggan",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            IconButton(
-                                onClick = { showDeleteConfirm = true },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .testTag("button_delete_customer_profile")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Hapus Pelanggan",
-                                    tint = DangerRed,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            IconButton(
-                                onClick = onDismiss,
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.surface,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 modifier = Modifier.size(36.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Tutup",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                IconButton(
+                                    onClick = { onEditCustomer(customer) },
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .testTag("button_edit_customer_profile")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit Pelanggan",
+                                        tint = PrimaryBlue,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.surface,
+                                border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f)),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                IconButton(
+                                    onClick = { showDeleteConfirm = true },
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .testTag("button_delete_customer_profile")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Hapus Pelanggan",
+                                        tint = DangerRed,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
                 // Scrollable Content
                 LazyColumn(
@@ -394,8 +409,8 @@ fun CustomerProfileDialog(
                         item {
                             Surface(
                                 shape = KelolaRadius.ShapeMedium,
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -406,125 +421,281 @@ fun CustomerProfileDialog(
                                     Icon(
                                         imageVector = Icons.Default.Notes,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = PrimaryBlue,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
                                         text = customer.notes,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPrimary
                                     )
                                 }
                             }
                         }
                     }
 
-                    // 1. STATISTIK UTAMA
+                    // 1. STATISTIK UTAMA (2x2 Grid)
                     item {
                         Text(
                             text = "Ringkasan Statistik",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = TextPrimary
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
+                        // Row 1: Total Uang Diterima & Total Transaksi
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            // Total Pembelian
+                            // Total Uang Diterima
                             Card(
                                 shape = KelolaRadius.ShapeMedium,
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                    containerColor = MaterialTheme.colorScheme.surface
                                 ),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-                                modifier = Modifier.weight(1f)
+                                border = BorderStroke(1.5.dp, PrimaryBlue),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .kelolaSoftShadow(KelolaRadius.ShapeMedium, 1.dp)
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(10.dp),
+                                    modifier = Modifier.padding(12.dp),
                                     horizontalAlignment = Alignment.Start
                                 ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Surface(
+                                            shape = KelolaRadius.ShapeSmall,
+                                            color = PrimaryBlueContainer,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Payments,
+                                                    contentDescription = null,
+                                                    tint = PrimaryBlue,
+                                                    modifier = Modifier.size(15.dp)
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            text = "Uang Diterima",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextSecondary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "Pembelian",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        text = FormatUtils.formatRupiah(customerWithStats.totalPaid),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = PrimaryBlue,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "${customerWithStats.totalPurchases} transaksi",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        text = "Total uang masuk",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 10.sp,
+                                        color = TextSecondary
                                     )
                                 }
                             }
 
-                            // Belum Dibayar
+                            // Total Transaksi
                             Card(
                                 shape = KelolaRadius.ShapeMedium,
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (customerWithStats.totalUnpaid > 0L)
-                                        DangerContainer.copy(alpha = 0.4f)
-                                    else
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                    containerColor = MaterialTheme.colorScheme.surface
                                 ),
-                                border = BorderStroke(
-                                    1.dp,
-                                    if (customerWithStats.totalUnpaid > 0L) DangerRed.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outlineVariant
-                                ),
-                                modifier = Modifier.weight(1f)
+                                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .kelolaSoftShadow(KelolaRadius.ShapeMedium, 1.dp)
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(10.dp),
+                                    modifier = Modifier.padding(12.dp),
                                     horizontalAlignment = Alignment.Start
                                 ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Surface(
+                                            shape = KelolaRadius.ShapeSmall,
+                                            color = MaterialTheme.colorScheme.surfaceVariant,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = Icons.Default.ReceiptLong,
+                                                    contentDescription = null,
+                                                    tint = TextPrimary,
+                                                    modifier = Modifier.size(15.dp)
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            text = "Total Belanja",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextSecondary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "Belum Bayar",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (customerWithStats.totalUnpaid > 0L) DangerRed else MaterialTheme.colorScheme.onSurfaceVariant
+                                        text = "${customerWithStats.totalPurchases} Transaksi",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = TextPrimary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Riwayat pembelian",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 10.sp,
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Row 2: Sisa Kasbon & Kembalian Tertunda
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Sisa Kasbon (Belum Bayar)
+                            val hasDebt = customerWithStats.totalUnpaid > 0L
+                            Card(
+                                shape = KelolaRadius.ShapeMedium,
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (hasDebt) DangerContainer else MaterialTheme.colorScheme.surface
+                                ),
+                                border = BorderStroke(
+                                    1.5.dp,
+                                    if (hasDebt) DangerRed else MaterialTheme.colorScheme.outlineVariant
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .kelolaSoftShadow(KelolaRadius.ShapeMedium, 1.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(12.dp),
+                                    horizontalAlignment = Alignment.Start
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Surface(
+                                            shape = KelolaRadius.ShapeSmall,
+                                            color = if (hasDebt) DangerRed.copy(alpha = 0.2f) else SuccessContainer,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = if (hasDebt) Icons.Default.HourglassTop else Icons.Default.CheckCircle,
+                                                    contentDescription = null,
+                                                    tint = if (hasDebt) DangerRed else SuccessGreen,
+                                                    modifier = Modifier.size(15.dp)
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            text = "Sisa Kasbon",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (hasDebt) DangerRed else TextSecondary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = FormatUtils.formatRupiah(customerWithStats.totalUnpaid),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (customerWithStats.totalUnpaid > 0L) DangerRed else MaterialTheme.colorScheme.onSurface
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = if (hasDebt) DangerRed else SuccessGreen,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = if (hasDebt) "Belum dilunasi" else "Lunas / Nihil",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 10.sp,
+                                        fontWeight = if (hasDebt) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (hasDebt) DangerRed else SuccessGreen
                                     )
                                 }
                             }
 
                             // Kembalian Tertunda
+                            val hasPendingChange = customerWithStats.totalPendingChange > 0L
                             Card(
                                 shape = KelolaRadius.ShapeMedium,
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (customerWithStats.totalPendingChange > 0L)
-                                        WarningContainer.copy(alpha = 0.4f)
-                                    else
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                    containerColor = if (hasPendingChange) WarningContainer else MaterialTheme.colorScheme.surface
                                 ),
                                 border = BorderStroke(
-                                    1.dp,
-                                    if (customerWithStats.totalPendingChange > 0L) WarningAmber.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outlineVariant
+                                    1.5.dp,
+                                    if (hasPendingChange) WarningAmber else MaterialTheme.colorScheme.outlineVariant
                                 ),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .kelolaSoftShadow(KelolaRadius.ShapeMedium, 1.dp)
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(10.dp),
+                                    modifier = Modifier.padding(12.dp),
                                     horizontalAlignment = Alignment.Start
                                 ) {
-                                    Text(
-                                        text = "Kembalian",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (customerWithStats.totalPendingChange > 0L) WarningAmber else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Surface(
+                                            shape = KelolaRadius.ShapeSmall,
+                                            color = if (hasPendingChange) WarningAmber.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = if (hasPendingChange) Icons.Default.Warning else Icons.Default.CheckCircle,
+                                                    contentDescription = null,
+                                                    tint = if (hasPendingChange) WarningAmber else TextSecondary,
+                                                    modifier = Modifier.size(15.dp)
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            text = "Kembalian",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (hasPendingChange) WarningAmber else TextSecondary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = FormatUtils.formatRupiah(customerWithStats.totalPendingChange),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (customerWithStats.totalPendingChange > 0L) WarningAmber else MaterialTheme.colorScheme.onSurface
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = if (hasPendingChange) WarningAmber else TextPrimary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = if (hasPendingChange) "Belum diserahkan" else "Tidak ada kembalian",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 10.sp,
+                                        fontWeight = if (hasPendingChange) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (hasPendingChange) WarningAmber else TextSecondary
                                     )
                                 }
                             }
@@ -542,13 +713,13 @@ fun CustomerProfileDialog(
                                 text = "Tagihan Belum Lunas (${unpaidDebts.size})",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = TextPrimary
                             )
                             if (customerWithStats.totalUnpaid > 0L) {
                                 Text(
                                     text = "Total: ${FormatUtils.formatRupiah(customerWithStats.totalUnpaid)}",
                                     style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold,
+                                    fontWeight = FontWeight.Bold,
                                     color = DangerRed
                                 )
                             }
@@ -559,8 +730,8 @@ fun CustomerProfileDialog(
                         item {
                             Surface(
                                 shape = KelolaRadius.ShapeMedium,
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -577,7 +748,8 @@ fun CustomerProfileDialog(
                                     Text(
                                         text = "Tidak ada tagihan atau kasbon belum lunas.",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPrimary
                                     )
                                 }
                             }
@@ -587,7 +759,7 @@ fun CustomerProfileDialog(
                             Surface(
                                 shape = KelolaRadius.ShapeMedium,
                                 color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.25f)),
+                                border = BorderStroke(1.5.dp, DangerRed),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .kelolaSoftShadow(KelolaRadius.ShapeMedium, 1.dp)
@@ -603,26 +775,28 @@ fun CustomerProfileDialog(
                                         Text(
                                             text = FormatUtils.formatDate(debt.createdAt),
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextSecondary
                                         )
                                         Text(
                                             text = "Sisa: ${FormatUtils.formatRupiah(debt.remainingAmount)}",
                                             style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.ExtraBold,
                                             color = DangerRed
                                         )
                                         Text(
                                             text = "Total ${FormatUtils.formatRupiah(debt.amount)} • Dibayar ${FormatUtils.formatRupiah(debt.amount - debt.remainingAmount)}",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextSecondary
                                         )
                                         if (debt.note.isNotBlank()) {
                                             Text(
                                                 text = "Catatan: ${debt.note}",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontSize = 11.sp,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = TextPrimary
                                             )
                                         }
                                     }
@@ -633,11 +807,11 @@ fun CustomerProfileDialog(
                                             onSettleDebt(debt)
                                         },
                                         shape = KelolaRadius.ShapeInput,
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                                        modifier = Modifier.height(34.dp)
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                                        modifier = Modifier.height(KelolaSpacing.ButtonHeightSmall)
                                     ) {
-                                        Text("Lunasi", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                        Text("Lunasi", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -655,13 +829,13 @@ fun CustomerProfileDialog(
                                 text = "Kembalian Belum Diberikan (${pendingChanges.size})",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = TextPrimary
                             )
                             if (customerWithStats.totalPendingChange > 0L) {
                                 Text(
                                     text = "Total: ${FormatUtils.formatRupiah(customerWithStats.totalPendingChange)}",
                                     style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold,
+                                    fontWeight = FontWeight.Bold,
                                     color = WarningAmber
                                 )
                             }
@@ -672,8 +846,8 @@ fun CustomerProfileDialog(
                         item {
                             Surface(
                                 shape = KelolaRadius.ShapeMedium,
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -690,7 +864,8 @@ fun CustomerProfileDialog(
                                     Text(
                                         text = "Tidak ada kembalian yang belum diberikan.",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPrimary
                                     )
                                 }
                             }
@@ -700,7 +875,7 @@ fun CustomerProfileDialog(
                             Surface(
                                 shape = KelolaRadius.ShapeMedium,
                                 color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, WarningAmber.copy(alpha = 0.35f)),
+                                border = BorderStroke(1.5.dp, WarningAmber),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .kelolaSoftShadow(KelolaRadius.ShapeMedium, 1.dp)
@@ -716,12 +891,13 @@ fun CustomerProfileDialog(
                                         Text(
                                             text = FormatUtils.formatDate(changeRec.createdAt),
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextSecondary
                                         )
                                         Text(
                                             text = "Kembalian: ${FormatUtils.formatRupiah(changeRec.amount)}",
                                             style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.ExtraBold,
                                             color = WarningAmber
                                         )
                                         if (changeRec.note.isNotBlank()) {
@@ -729,7 +905,7 @@ fun CustomerProfileDialog(
                                                 text = changeRec.note,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontSize = 11.sp,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = TextPrimary
                                             )
                                         }
                                     }
@@ -738,12 +914,12 @@ fun CustomerProfileDialog(
                                         onClick = { onMarkChangeAsPaid(changeRec.id) },
                                         shape = KelolaRadius.ShapeInput,
                                         colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
-                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                                        modifier = Modifier.height(34.dp)
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        modifier = Modifier.height(KelolaSpacing.ButtonHeightSmall)
                                     ) {
                                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Sudah Diberikan", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                        Text("Sudah Diberikan", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -756,7 +932,7 @@ fun CustomerProfileDialog(
                             text = "Riwayat Transaksi Terbaru",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = TextPrimary
                         )
                     }
 
@@ -764,14 +940,15 @@ fun CustomerProfileDialog(
                         item {
                             Surface(
                                 shape = KelolaRadius.ShapeMedium,
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
                                     text = "Belum ada transaksi tercatat untuk pelanggan ini.",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium,
+                                    color = TextSecondary,
                                     modifier = Modifier.padding(12.dp)
                                 )
                             }
@@ -781,7 +958,7 @@ fun CustomerProfileDialog(
                             Surface(
                                 shape = KelolaRadius.ShapeMedium,
                                 color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -795,14 +972,15 @@ fun CustomerProfileDialog(
                                         Text(
                                             text = "#${tx.transactionNumber}",
                                             style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextPrimary
                                         )
                                         Text(
                                             text = "${FormatUtils.formatDate(tx.createdAt)} • ${tx.paymentMethod}",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextSecondary
                                         )
                                     }
 
@@ -810,19 +988,25 @@ fun CustomerProfileDialog(
                                         Text(
                                             text = FormatUtils.formatRupiah(tx.total),
                                             style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = PrimaryBlue
                                         )
+                                        val isCompleted = tx.status == "COMPLETED"
+                                        val isUnpaid = tx.status == "UNPAID"
                                         Surface(
-                                            shape = RoundedCornerShape(4.dp),
-                                            color = if (tx.status == "COMPLETED") SuccessContainer else WarningContainer,
+                                            shape = KelolaRadius.ShapeSm,
+                                            color = if (isCompleted) SuccessContainer else if (isUnpaid) DangerContainer else WarningContainer,
+                                            border = BorderStroke(
+                                                1.dp,
+                                                if (isCompleted) SuccessGreen else if (isUnpaid) DangerRed else WarningAmber
+                                            ),
                                             modifier = Modifier.padding(top = 2.dp)
                                         ) {
                                             Text(
-                                                text = if (tx.status == "COMPLETED") "Lunas" else if (tx.status == "UNPAID") "Belum Lunas" else tx.status,
+                                                text = if (isCompleted) "Lunas" else if (isUnpaid) "Belum Lunas" else tx.status,
                                                 fontSize = 10.sp,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = if (tx.status == "COMPLETED") SuccessGreen else WarningAmber,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isCompleted) SuccessGreen else if (isUnpaid) DangerRed else WarningAmber,
                                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                             )
                                         }
@@ -833,7 +1017,7 @@ fun CustomerProfileDialog(
                     }
                 }
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
                 // Bottom Dismiss Action
                 Surface(
@@ -850,9 +1034,9 @@ fun CustomerProfileDialog(
                             onClick = onDismiss,
                             shape = KelolaRadius.ShapeInput,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.height(38.dp)
+                            modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
                         ) {
-                            Text("Tutup", fontWeight = FontWeight.SemiBold)
+                            Text("Tutup", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -863,6 +1047,7 @@ fun CustomerProfileDialog(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
+            shape = KelolaRadius.ShapeLarge,
             title = { Text("Hapus Pelanggan?") },
             text = {
                 Text("Data profil pelanggan '${customer.name}' akan dihapus dari daftar pelanggan. Riwayat transaksi sebelumnya tetap tersimpan di riwayat toko.")
@@ -875,7 +1060,8 @@ fun CustomerProfileDialog(
                         onDeleteCustomer(customer.id)
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed),
-                    shape = KelolaRadius.ShapeInput
+                    shape = KelolaRadius.ShapeInput,
+                    modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
                 ) {
                     Text("Hapus", fontWeight = FontWeight.SemiBold)
                 }
@@ -883,7 +1069,8 @@ fun CustomerProfileDialog(
             dismissButton = {
                 OutlinedButton(
                     onClick = { showDeleteConfirm = false },
-                    shape = KelolaRadius.ShapeInput
+                    shape = KelolaRadius.ShapeInput,
+                    modifier = Modifier.height(KelolaSpacing.ButtonHeightCompact)
                 ) {
                     Text("Batal")
                 }
@@ -987,7 +1174,7 @@ fun CustomerPickerDialog(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
+                            .height(KelolaSpacing.InputHeight)
                     )
 
                     Row(
@@ -1017,7 +1204,7 @@ fun CustomerPickerDialog(
                             shape = KelolaRadius.ShapeInput,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                            modifier = Modifier.height(34.dp)
+                            modifier = Modifier.height(KelolaSpacing.ButtonHeightSmall)
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))

@@ -486,7 +486,7 @@ fun AboutScreen(
 @Composable
 private fun BadgePill(text: String) {
     Surface(
-        shape = RoundedCornerShape(6.dp),
+        shape = KelolaRadius.ShapeSmall,
         color = MaterialTheme.colorScheme.surfaceVariant,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {

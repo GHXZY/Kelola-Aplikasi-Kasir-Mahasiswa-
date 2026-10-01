@@ -85,7 +85,7 @@ fun QrisCropDialog(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
                 .padding(vertical = 16.dp),
-            shape = RoundedCornerShape(20.dp),
+            shape = KelolaRadius.ShapeLarge,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp
         ) {
@@ -149,9 +149,9 @@ fun QrisCropDialog(
                     modifier = Modifier
                         .size(260.dp)
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(KelolaRadius.ShapeCard)
                         .background(Color.Black)
-                        .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
+                        .border(2.dp, MaterialTheme.colorScheme.primary, KelolaRadius.ShapeCard)
                         .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->
                                 change.consume()
@@ -202,7 +202,7 @@ fun QrisCropDialog(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .padding(8.dp),
-                        shape = RoundedCornerShape(6.dp),
+                        shape = KelolaRadius.ShapeSmall,
                         color = Color.Black.copy(alpha = 0.65f)
                     ) {
                         Row(
@@ -267,7 +267,7 @@ fun QrisCropDialog(
                             panY = 0f
                         },
                         shape = KelolaRadius.ShapeSmall,
-                        modifier = Modifier.height(36.dp)
+                        modifier = Modifier.height(KelolaSpacing.ButtonHeightSmall)
                     ) {
                         Icon(Icons.Default.RotateLeft, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
@@ -292,7 +292,7 @@ fun QrisCropDialog(
                         shape = KelolaRadius.ShapeInput,
                         modifier = Modifier
                             .weight(1f)
-                            .height(44.dp)
+                            .height(KelolaSpacing.ButtonHeightCta)
                     ) {
                         Text("Batal")
                     }
@@ -335,7 +335,7 @@ fun QrisCropDialog(
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         modifier = Modifier
                             .weight(1f)
-                            .height(44.dp)
+                            .height(KelolaSpacing.ButtonHeightCta)
                             .testTag("button_confirm_qris_crop")
                     ) {
                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))

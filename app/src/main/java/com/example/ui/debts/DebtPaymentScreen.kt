@@ -287,7 +287,7 @@ fun DebtPaymentScreen(
 
                             // Tag Status Kasbon
                             Surface(
-                                shape = RoundedCornerShape(6.dp),
+                                shape = KelolaRadius.ShapeSmall,
                                 color = DangerContainer.copy(alpha = 0.7f)
                             ) {
                                 Text(
@@ -576,7 +576,7 @@ fun DebtPaymentScreen(
                                 if (qrisBitmap != null) {
                                     // TAMPILAN QRIS BESAR (Ukuran 280dp)
                                     Surface(
-                                        shape = RoundedCornerShape(16.dp),
+                                        shape = KelolaRadius.ShapeLarge,
                                         color = Color.White,
                                         border = BorderStroke(2.dp, BorderLight),
                                         modifier = Modifier
@@ -596,7 +596,7 @@ fun DebtPaymentScreen(
                                 } else {
                                     // Placeholder jika QRIS belum diunggah
                                     Surface(
-                                        shape = RoundedCornerShape(16.dp),
+                                        shape = KelolaRadius.ShapeLarge,
                                         color = WarningContainer.copy(alpha = 0.5f),
                                         border = BorderStroke(1.5.dp, WarningAmber.copy(alpha = 0.5f)),
                                         modifier = Modifier
@@ -1049,7 +1049,7 @@ fun DebtPaymentScreen(
 
                     if (!isFullPayment && isValidAmount) {
                         Surface(
-                            shape = RoundedCornerShape(4.dp),
+                            shape = KelolaRadius.ShapeSm,
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             Text(

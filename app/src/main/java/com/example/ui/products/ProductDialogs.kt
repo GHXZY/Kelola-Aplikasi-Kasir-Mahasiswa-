@@ -131,7 +131,7 @@ fun AddEditProductDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
@@ -532,7 +532,7 @@ fun RestockDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
@@ -671,7 +671,7 @@ fun ReduceStockDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
@@ -839,7 +839,7 @@ fun AddCategoryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = KelolaRadius.ShapeCard,
+        shape = KelolaRadius.ShapeLarge,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
